@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام محاسبة وتشغيل النقل اللوجستي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;900&family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F5F7;
+  --surface:#FFFFFF;
+  --surface-2:#EEF0F4;
+  --border:#DDE1E7;
+  --text:#171A21;
+  --muted:#6B7280;
+  --primary:#2454C7;
+  --primary-ink:#FFFFFF;
+  --amber:#B4700A;
+  --amber-bg:#FBEBD3;
+  --red:#C13B2A;
+  --red-bg:#FBE2DD;
+  --green:#0F8F5F;
+  --green-bg:#DCF3E8;
+  --blue-bg:#E1EAFB;
+  --shadow-sm:0 1px 2px rgba(20,25,35,0.06);
+  --shadow-md:0 6px 18px -6px rgba(20,25,35,0.16);
+  --shadow-lg:0 16px 40px -14px rgba(20,25,35,0.28);
+  --radius:12px;
+  --radius-sm:8px;
+  --bw:1px;
+}
+[data-theme="dark"]{
+  --bg:#0F1115;
+  --surface:#1A1D24;
+  --surface-2:#22262F;
+  --border:#31363F;
+  --text:#EDEEF1;
+  --muted:#9AA0AC;
+  --primary:#5B85EA;
+  --primary-ink:#0B0E14;
+  --amber:#E3A94A;
+  --amber-bg:#3A2E14;
+  --red:#F0796A;
+  --red-bg:#3A1E1A;
+  --green:#3FD08C;
+  --green-bg:#123526;
+  --blue-bg:#1B2740;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md:0 8px 20px -8px rgba(0,0,0,0.55);
+  --shadow-lg:0 20px 46px -16px rgba(0,0,0,0.65);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Cairo',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  direction:rtl;
+  -webkit-font-smoothing:antialiased;
+  transition:background .2s, color .2s;
+}
+button,input,select,textarea{font-family:inherit;}
+button{cursor:pointer;}
+h1,h2,h3,.disp{font-family:'Tajawal',sans-serif;font-weight:800;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.hidden{display:none !important;}
+::selection{background:var(--primary);color:#fff;}
+
+.bblock{
+  background:var(--surface);
+  border:var(--bw) solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-md);
+}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:var(--bw) solid var(--border);
+  background:var(--surface);
+  color:var(--text);
+  font-weight:700;
+  font-size:13.5px;
+  padding:11px 18px;
+  border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-sm);
+  transition:transform .08s, box-shadow .15s, background .15s, opacity .15s;
+  white-space:nowrap;
+}
+.btn:hover{box-shadow:var(--shadow-md);}
+.btn:active{transform:scale(0.98);}
+.btn-y{background:var(--primary);color:var(--primary-ink);border-color:var(--primary);}
+.btn-y:hover{opacity:.92;}
+.btn-r{background:var(--red);color:#fff;border-color:var(--red);}
+.btn-g{background:var(--green);color:#fff;border-color:var(--green);}
+.btn-b{background:var(--primary);color:var(--primary-ink);border-color:var(--primary);}
+.btn-sm{padding:7px 13px;font-size:12.5px;border-radius:7px;}
+.btn-ghost{background:transparent;box-shadow:none;border:var(--bw) solid var(--border);}
+.btn-ghost:hover{background:var(--surface-2);}
+.btn-icon{width:36px;height:36px;padding:0;border-radius:8px;}
+.btn-block{width:100%;}
+
+input,select,textarea{
+  border:var(--bw) solid var(--border);
+  border-radius:var(--radius-sm);
+  background:var(--surface);
+  color:var(--text);
+  padding:10px 12px;
+  font-size:14px;
+  width:100%;
+  transition:border-color .15s, box-shadow .15s;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(36,84,199,0.18);}
+textarea{min-height:70px;resize:vertical;}
+label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:var(--muted);}
+.field{margin-bottom:14px;}
+
+.badge{
+  display:inline-block;border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;background:var(--surface-2);color:var(--text);border:1px solid var(--border);
+}
+.badge-y{background:var(--blue-bg);color:var(--primary);border-color:transparent;}
+.badge-r{background:var(--red-bg);color:var(--red);border-color:transparent;}
+.badge-g{background:var(--green-bg);color:var(--green);border-color:transparent;}
+.badge-b{background:var(--blue-bg);color:var(--primary);border-color:transparent;}
+.badge-o{background:transparent;}
+
+#loginScreen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:linear-gradient(160deg, var(--bg) 0%, var(--surface-2) 100%);
+}
+.login-card{width:100%;max-width:440px;padding:34px;background:var(--surface);}
+.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+.login-mark{width:50px;height:50px;background:var(--primary);color:var(--primary-ink);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;flex-shrink:0;}
+.login-brand h1{font-size:18px;line-height:1.4;}
+.login-brand p{font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:600;}
+.login-sub{font-size:13px;color:var(--muted);margin:18px 0;line-height:1.85;font-weight:500;}
+.login-err{background:var(--red-bg);color:var(--red);font-size:13px;font-weight:700;padding:11px 14px;border-radius:var(--radius-sm);margin-bottom:14px;}
+.login-toggle{text-align:center;margin-top:16px;font-size:12px;color:var(--muted);font-weight:600;line-height:1.9;}
+.perm-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);}
+.perm-chip{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:5px 10px;cursor:pointer;}
+.perm-chip input{margin:0;}
+.phone-row{display:flex;gap:8px;direction:ltr;}
+.phone-row .country-select{flex:0 0 110px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-weight:700;padding:0 8px;text-align:center;}
+.phone-row input{flex:1;text-align:left;}
+.waiting-spinner{width:40px;height:40px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--primary);margin:18px auto;animation:spin 0.9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#deviceApprovalBanner{position:fixed;inset:0;z-index:9999;background:rgba(10,16,32,.55);display:flex;align-items:center;justify-content:center;padding:16px;}
+#deviceApprovalBanner.hidden{display:none;}
+.device-approval-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.device-approval-title{font-weight:900;font-size:16px;margin-bottom:8px;}
+.device-approval-body{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:16px;}
+.device-approval-actions{display:flex;gap:10px;}
+.device-approval-actions .btn{flex:1;}
+.login-loading{text-align:center;font-size:12.5px;color:var(--muted);margin-top:12px;font-weight:600;}
+
+#appScreen,#driverScreen{min-height:100vh;display:flex;flex-direction:column;}
+.topbar{
+  background:var(--surface);color:var(--text);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;height:60px;flex-shrink:0;border-bottom:1px solid var(--border);
+}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.topbar-mark{width:34px;height:34px;background:var(--primary);color:var(--primary-ink);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;}
+.topbar-title{font-size:14px;font-weight:800;}
+.topbar-sub{font-size:10.5px;color:var(--muted);font-weight:600;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.theme-toggle{width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.theme-toggle:hover{background:var(--surface-2);}
+.logout-btn{border-radius:8px;border:1px solid var(--border);color:var(--text);background:var(--surface);font-size:12px;font-weight:700;padding:8px 13px;}
+.logout-btn:hover{background:var(--surface-2);}
+.hamburger{display:none;width:36px;height:36px;border-radius:9px;border:1px solid var(--border);color:var(--text);background:var(--surface);font-size:15px;align-items:center;justify-content:center;}
+
+.app-body{flex:1;display:flex;min-height:0;}
+.sidebar{
+  width:216px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;padding:10px;
+}
+.sidebar button{
+  text-align:right;padding:11px 14px;font-size:13px;font-weight:700;color:var(--muted);
+  border-radius:9px;display:flex;align-items:center;gap:10px;margin-bottom:2px;
+}
+.sidebar button:hover{background:var(--surface-2);color:var(--text);}
+.sidebar button.active{background:var(--blue-bg);color:var(--primary);}
+.sidebar-tag{margin-top:auto;padding:14px 12px 6px;font-size:10.5px;color:var(--muted);font-weight:600;border-top:1px solid var(--border);line-height:1.7;}
+
+main{flex:1;padding:24px;overflow-y:auto;max-width:1300px;}
+
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;}
+.page-title{font-size:20px;}
+.page-sub{font-size:12.5px;color:var(--muted);margin-top:4px;font-weight:600;}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);}
+.card + .card{margin-top:16px;}
+.section-title{font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:8px;font-weight:800;}
+
+.grid{display:grid;gap:14px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}}
+
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:15px;box-shadow:var(--shadow-sm);}
+.metric-l{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+.metric-v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;}
+.metric-v.neg{color:var(--red);}
+.metric-v.pos{color:var(--green);}
+
+.list-item{border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;background:var(--surface);margin-bottom:10px;box-shadow:var(--shadow-sm);}
+.li-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+.li-title{font-weight:800;font-size:14px;}
+.li-meta{font-size:11.5px;color:var(--muted);margin-top:4px;font-weight:600;line-height:1.7;}
+.li-actions{display:flex;gap:6px;flex-shrink:0;}
+
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.tabs button{padding:9px 18px;font-size:12.5px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);}
+.tabs button.active{background:var(--primary);color:var(--primary-ink);border-color:var(--primary);}
+
+.table-wrap{overflow-x:auto;border-radius:var(--radius-sm);}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th,td{border-bottom:1px solid var(--border);padding:9px 11px;text-align:center;}
+th{background:var(--surface-2);color:var(--muted);font-weight:700;font-size:11px;}
+td{font-weight:600;}
+tr.total-row td{background:var(--blue-bg);color:var(--primary);font-weight:800;}
+tr.neg td{color:var(--red);}
+
+.split-bar{display:flex;height:32px;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+.split-seg{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;padding:0 4px;}
+
+.empty-state{text-align:center;padding:44px 20px;color:var(--muted);}
+.empty-state p{font-size:13px;margin-bottom:14px;font-weight:600;line-height:1.8;}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(15,17,21,0.5);backdrop-filter:blur(2px);display:flex;align-items:flex-start;justify-content:center;padding:30px 14px;overflow-y:auto;z-index:100;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);padding:24px;width:100%;max-width:620px;}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.modal-head h3{font-size:16px;}
+.modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);font-size:15px;font-weight:700;background:var(--surface);}
+.modal-close:hover{background:var(--surface-2);}
+.modal-footer{display:flex;gap:10px;margin-top:18px;}
+.modal-footer .btn{flex:1;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-grid .full{grid-column:1/-1;}
+@media(max-width:560px){.form-grid{grid-template-columns:1fr;}}
+
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;}
+.filter-field{min-width:140px;flex:1;}
+.filter-field label{margin-bottom:5px;}
+
+.exp-row{display:flex;gap:8px;align-items:center;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;margin-bottom:6px;flex-wrap:wrap;background:var(--surface-2);}
+.exp-row select,.exp-row input{width:auto;flex:1;min-width:90px;padding:7px 8px;font-size:12.5px;}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:12px 20px;font-weight:700;font-size:13px;border-radius:10px;z-index:200;box-shadow:var(--shadow-lg);}
+.toast.err{background:var(--red);color:#fff;}
+
+.alert-item{border-radius:var(--radius-sm);padding:10px 13px;margin-bottom:8px;font-size:12px;font-weight:700;display:flex;justify-content:space-between;gap:10px;background:var(--surface-2);}
+.alert-item.warn{background:var(--amber-bg);color:var(--amber);}
+.alert-item.danger{background:var(--red-bg);color:var(--red);}
+
+#driverScreen main{max-width:560px;margin:0 auto;padding:16px;}
+.dtile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);margin-bottom:12px;}
+.dtile-big{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;gap:6px;}
+.dtile-big .mono{font-size:24px;}
+.dnav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);background:var(--surface);position:sticky;bottom:0;}
+.dnav button{padding:11px 4px;font-size:10.5px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;}
+.dnav button.active{color:var(--primary);}
+.dnav button span:first-child{font-size:16px;}
+
+@media(max-width:860px){
+  .sidebar{position:fixed;top:60px;bottom:0;right:0;z-index:60;transform:translateX(100%);transition:transform .2s;box-shadow:var(--shadow-lg);}
+  .sidebar.open{transform:translateX(0);}
+  .hamburger{display:flex;}
+  main{padding:16px 14px 40px;}
+}
+
+</style>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2454C7">
+<!-- خرائط Leaflet المجانية (OpenStreetMap) بدون مفتاح API -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<!-- ============================================================
+     ربط Firebase (اختياري) — للتزامن الحقيقي بين كل الأجهزة
+     يستخدم Realtime Database (يعمل ضمن خطة Spark المجانية بدون بطاقة دفع)
+     ------------------------------------------------------------
+     1) أنشئ مشروعاً مجانياً على https://console.firebase.google.com
+     2) من "Databases & Storage" فعّل "Realtime Database" (وضع Test mode مبدئياً)
+     3) من إعدادات المشروع → Web App، انسخ بيانات firebaseConfig (تشمل databaseURL)
+     4) الصق القيم الحقيقية بدل النصوص "PASTE_..." في الأسفل
+     5) ارفع الملف مجدداً — سيتحول التطبيق تلقائياً لاستخدام Firebase
+     بدون أي تعديل آخر. إن تُرك كما هو، يعمل التطبيق بالوضع المحلي كالمعتاد.
+     ============================================================ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, get, set, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCK33msN9nt8iRntunkAdMtco8G1Z_Im8Q",
+    authDomain: "nakel-3d246.firebaseapp.com",
+    databaseURL: "https://nakel-3d246-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "nakel-3d246",
+    storageBucket: "nakel-3d246.firebasestorage.app",
+    messagingSenderId: "457996465127",
+    appId: "1:457996465127:web:9649ab376c78fe2c1c4342"
+  };
+
+  const isConfigured = firebaseConfig.apiKey && !String(firebaseConfig.apiKey).startsWith("PASTE_");
+  window.__firebaseReadyFlag = false;
+
+  if(isConfigured){
+    try{
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      window.__firebaseGet = async function(key){
+        const r = ref(db, "nakl_kv/" + encodeURIComponent(key));
+        const snap = await get(r);
+        if(!snap.exists()) return null;
+        const data = snap.val();
+        return (data && data.value !== undefined) ? JSON.parse(data.value) : null;
+      };
+      window.__firebaseSet = async function(key, value){
+        const r = ref(db, "nakl_kv/" + encodeURIComponent(key));
+        await set(r, { value: JSON.stringify(value), updatedAt: Date.now() });
+        return true;
+      };
+
+      window.__firebaseListen = function(key, cb){
+        const r = ref(db, "nakl_kv/" + encodeURIComponent(key));
+        onValue(r, (snap)=>{
+          const data = snap.exists() ? snap.val() : null;
+          const value = (data && data.value !== undefined) ? JSON.parse(data.value) : null;
+          cb(value);
+        });
+        return r;
+      };
+      window.__firebaseUnlisten = function(refObj){ if(refObj) off(refObj); };
+
+      /* تسجيل دخول مجهول مجاني (لا يحتاج بطاقة دفع ولا رقم هاتف) — يُستخدم فقط
+         لمنع الوصول العشوائي غير الموثّق لقاعدة البيانات عبر قواعد الأمان
+         auth != null، وهو أول خط حماية مجاني قبل تفعيل التحقق الحقيقي بالهاتف. */
+      const auth = getAuth(app);
+      signInAnonymously(auth).catch(e=>console.error('anonymous auth failed:', e));
+
+      window.__firebaseReadyFlag = true;
+      console.log("✅ Firebase Realtime Database متصل — التزامن السحابي الحقيقي بين الأجهزة مُفعّل.");
+    }catch(e){
+      console.error("Firebase init failed:", e);
+      window.__firebaseReadyFlag = false;
+    }
+  }
+</script>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginScreen">
+  <div class="login-card bblock">
+    <div class="login-brand">
+      <div class="login-mark">نل</div>
+      <div>
+        <h1 class="disp">نظام محاسبة وتشغيل النقل اللوجستي</h1>
+        <p>رحلات · آليات · صيانة · وقود · رواتب · فواتير</p>
+      </div>
+    </div>
+    <div id="loginError" class="login-err hidden"></div>
+
+    <div id="loginStepPhone">
+      <p class="login-sub" id="loginIntroText">أدخل رقم الهاتف للدخول. حساب المسؤول يملك كل الصلاحيات، وحسابات السائقين تُنشأ من داخل النظام أو عبر رابط دعوة.</p>
+      <div class="field">
+        <label>رقم الهاتف</label>
+        <div class="phone-row">
+          <select id="loginCountry" class="country-select"></select>
+          <input type="tel" id="loginPhone" placeholder="7xxxxxxxx" inputmode="numeric">
+        </div>
+      </div>
+      <button class="btn btn-y btn-block" onclick="handlePhoneSubmit()">دخول</button>
+      <div id="loginLoading" class="login-loading hidden">جارِ التحقق...</div>
+    </div>
+
+    <div id="loginStepNew" class="hidden">
+      <p class="login-sub">هذا الرقم غير مسجّل. أنشئ حساب المسؤول (صاحب الشركة) لبدء العمل.</p>
+      <div class="field"><label>اسم الشركة</label><input type="text" id="newCompanyName" placeholder="شركة الفرات للنقل والآليات"></div>
+      <div class="field"><label>اسمك</label><input type="text" id="newOwnerName" placeholder="اسم المسؤول"></div>
+      <button class="btn btn-y btn-block" onclick="handleCreateAccount()">إنشاء حساب المسؤول</button>
+      <button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="showLoginStep('phone')">رجوع</button>
+    </div>
+
+    <div id="loginStepJoin" class="hidden">
+      <p class="login-sub">هذا الرقم غير مسجّل، وأنت مدعوّ للانضمام إلى <b id="joinCompanyName">—</b> بصلاحيات محدودة.</p>
+      <div class="field"><label>اسمك</label><input type="text" id="joinUserName" placeholder="اسمك الكامل"></div>
+      <button class="btn btn-y btn-block" onclick="handleJoinTeam()">انضمام إلى فريق العمل</button>
+      <button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="showLoginStep('phone')">رجوع</button>
+    </div>
+
+    <div id="loginStepWaiting" class="hidden">
+      <p class="login-sub">جارٍ الدخول من جهاز جديد. يجب تأكيد السماح من أحد أجهزتك الأخرى المسجّلة دخول بنفس الرقم.</p>
+      <div class="waiting-spinner"></div>
+      <p class="login-sub" id="waitingStatusText">بانتظار الموافقة...</p>
+      <button class="btn btn-ghost btn-block" onclick="cancelDeviceWait()">إلغاء</button>
+    </div>
+
+    <div class="login-toggle">تسجيل الدخول برقم الهاتف فقط — بدون كلمة مرور.</div>
+    <div class="login-toggle" id="storageModeNotice"></div>
+  </div>
+</div>
+
+<!-- طلب موافقة جهاز جديد يظهر فوق أي شاشة داخل التطبيق -->
+<div id="deviceApprovalBanner" class="hidden">
+  <div class="device-approval-card">
+    <div class="device-approval-title">🔐 محاولة دخول من جهاز جديد</div>
+    <div class="device-approval-body">جهاز باسم "<span id="devApprovalLabel">—</span>" يحاول الدخول لحسابك بنفس رقم هاتفك. اسمح بذلك فقط إن كنت أنت من يحاول الدخول.</div>
+    <div class="device-approval-actions">
+      <button class="btn btn-y" onclick="respondDeviceRequest(true)">سماح</button>
+      <button class="btn btn-ghost" onclick="respondDeviceRequest(false)">رفض</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ADMIN APP ================= -->
+<div id="appScreen" class="hidden">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-mark">نل</div>
+      <div>
+        <div class="topbar-title" id="topbarCompanyName">—</div>
+        <div class="topbar-sub" id="topbarRoleLabel">لوحة المسؤول</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☾</button>
+      <button class="logout-btn" onclick="logout()">خروج</button>
+    </div>
+  </div>
+  <div class="app-body">
+    <div class="sidebar" id="sidebar">
+      <button data-view="dashboard" onclick="showView('dashboard')">◆ لوحة التحكم</button>
+      <button data-view="trips" onclick="showView('trips')">◆ الرحلات</button>
+      <button data-view="customers" onclick="showView('customers')">◆ العملاء</button>
+      <button data-view="drivers" onclick="showView('drivers')">◆ السائقون والعهد</button>
+      <button data-view="vehicles" onclick="showView('vehicles')">◆ الآليات</button>
+      <button data-view="fleetops" onclick="showView('fleetops')">◆ الصيانة والوقود</button>
+      <button data-view="invoices" onclick="showView('invoices')">◆ الفواتير والتحصيل</button>
+      <button data-view="cash" onclick="showView('cash')">◆ الحركة المالية</button>
+      <button data-view="payroll" onclick="showView('payroll')">◆ الرواتب</button>
+      <button data-view="reports" onclick="showView('reports')">◆ التقارير</button>
+      <button data-view="users" onclick="showView('users')">◆ المستخدمون والصلاحيات</button>
+      <button data-view="team" onclick="showView('team')">◆ الفريق ودعوات العمل</button>
+      <button data-view="tracking" onclick="showView('tracking')">◆ التتبع المباشر GPS</button>
+      <button data-view="settings" onclick="showView('settings')">◆ الإعدادات</button>
+      <div class="sidebar-tag" id="sidebarAccountTag"></div>
+    </div>
+    <main id="mainContent"></main>
+  </div>
+</div>
+
+<!-- ================= DRIVER APP ================= -->
+<div id="driverScreen" class="hidden">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-mark">نل</div>
+      <div>
+        <div class="topbar-title" id="driverTopCompany">—</div>
+        <div class="topbar-sub">تطبيق السائق</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-toggle" onclick="toggleTheme()">☾</button>
+      <button class="logout-btn" onclick="logout()">خروج</button>
+    </div>
+  </div>
+  <main id="driverContent"></main>
+  <div class="dnav">
+    <button data-dview="home" onclick="showDriverView('home')"><span>◆</span>رحلاتي</button>
+    <button data-dview="expense" onclick="showDriverView('expense')"><span>+</span>مصروف</button>
+    <button data-dview="fuel" onclick="showDriverView('fuel')"><span>⛽</span>وقود</button>
+    <button data-dview="advances" onclick="showDriverView('advances')"><span>₪</span>عهدتي</button>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* ===================== State ===================== */
+const state = {
+  phone:null, accountId:null, account:null, role:null, myDriverId:null,
+  users:[], customers:[], drivers:[], vehicles:[], trips:[], fuelEntries:[],
+  maintenanceEntries:[], invoices:[], advances:[], cashEntries:[], payrollRuns:[],
+  currentView:'dashboard', currentDriverView:'home', fleetTab:'maint', driverTab:'trips'
+};
+
+const EXP_TYPES = {
+  fuel:'وقود', tolls:'رسوم طريق', allowance:'بدل سائق', loading:'تحميل وتنزيل',
+  maintenance:'صيانة طارئة', customs:'جمارك وتصاريح', violation:'مخالفة', depreciation:'إهلاك تقديري', other:'أخرى'
+};
+const TRIP_STATUS = {
+  new:{l:'جديد', c:'badge-o'}, scheduled:{l:'مجدولة', c:'badge-b'},
+  inprogress:{l:'قيد التنفيذ', c:'badge-y'}, completed:{l:'مكتملة', c:'badge-g'},
+  invoiced:{l:'مفوترة', c:'badge-b'}, closed:{l:'مغلقة مالياً', c:'badge-g'},
+  cancelled:{l:'ملغاة', c:'badge-r'}
+};
+const ADV_TYPES = {trip:'سلفة رحلة', salary:'سلفة راتب', tools:'عهدة أدوات'};
+const MAINT_TYPES = {periodic:'دورية', emergency:'طارئة', preventive:'وقائية'};
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function normalizePhone(p){ return (p||'').replace(/[^0-9+]/g,''); }
+
+/* ===================== رموز الدول ===================== */
+const COUNTRY_CODES = [
+  {c:'+964',n:'العراق'},{c:'+966',n:'السعودية'},{c:'+971',n:'الإمارات'},{c:'+965',n:'الكويت'},
+  {c:'+974',n:'قطر'},{c:'+973',n:'البحرين'},{c:'+968',n:'عُمان'},{c:'+962',n:'الأردن'},
+  {c:'+961',n:'لبنان'},{c:'+963',n:'سوريا'},{c:'+970',n:'فلسطين'},{c:'+20',n:'مصر'},
+  {c:'+218',n:'ليبيا'},{c:'+216',n:'تونس'},{c:'+213',n:'الجزائر'},{c:'+212',n:'المغرب'},
+  {c:'+249',n:'السودان'},{c:'+967',n:'اليمن'},{c:'+90',n:'تركيا'},{c:'+98',n:'إيران'},
+  {c:'+1',n:'أمريكا/كندا'},{c:'+44',n:'بريطانيا'},{c:'+49',n:'ألمانيا'},{c:'+33',n:'فرنسا'},
+  {c:'+91',n:'الهند'},{c:'+92',n:'باكستان'},{c:'+86',n:'الصين'}
+];
+function populateCountrySelect(){
+  const sel = document.getElementById('loginCountry');
+  if(!sel || sel.options.length) return;
+  COUNTRY_CODES.forEach(x=>{
+    const opt = document.createElement('option');
+    opt.value = x.c; opt.textContent = x.c+' '+x.n;
+    sel.appendChild(opt);
+  });
+  sel.value = '+964';
+}
+
+/* ===================== هوية الجهاز ===================== */
+function getDeviceId(){
+  let id = localGet('nakel_device_id');
+  if(!id){ id = uid()+uid(); localSet('nakel_device_id', id); }
+  return id;
+}
+function getDeviceLabel(){
+  let label = localGet('nakel_device_label');
+  if(label) return label;
+  const ua = navigator.userAgent||'';
+  let os = 'جهاز غير معروف';
+  if(/android/i.test(ua)) os='أندرويد';
+  else if(/iphone|ipad/i.test(ua)) os='آيفون/آيباد';
+  else if(/windows/i.test(ua)) os='ويندوز';
+  else if(/mac/i.test(ua)) os='ماك';
+  else if(/linux/i.test(ua)) os='لينكس';
+  label = os+' — '+new Date().toLocaleDateString('ar');
+  localSet('nakel_device_label', label);
+  return label;
+}
+
+/* ===================== استماع لحظي (Firebase أو Polling احتياطي) ===================== */
+function sListen(key, cb){
+  if(firebaseReady()){
+    const refObj = window.__firebaseListen(key, cb);
+    return { stop(){ window.__firebaseUnlisten(refObj); } };
+  }
+  // احتياطي: فحص دوري كل 3 ثوانٍ عند عدم توفر Firebase (لكل مستمع مؤقّته الخاص المستقل)
+  let stopped=false;
+  let last = undefined;
+  let timerId = null;
+  const tick = async ()=>{
+    if(stopped) return;
+    const v = await sGet(key);
+    if(JSON.stringify(v)!==JSON.stringify(last)){ last=v; cb(v); }
+    if(!stopped) timerId=setTimeout(tick, 3000);
+  };
+  tick();
+  return { stop(){ stopped=true; if(timerId) clearTimeout(timerId); } };
+}
+function fmt(n){ n=Number(n)||0; return n.toLocaleString('en-US',{maximumFractionDigits:0}); }
+function fmtDate(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('ar-EG',{year:'numeric',month:'short',day:'numeric'}); }catch(e){ return d; } }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
+function showToast(msg, isErr){
+  const root=document.getElementById('toastRoot');
+  const t=document.createElement('div'); t.className='toast'+(isErr?' err':''); t.textContent=msg;
+  root.appendChild(t); setTimeout(()=>t.remove(),2600);
+}
+function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ===================== Storage ===================== */
+function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+/* أولوية التخزين: Firebase (إن تم ربطه — تزامن حقيقي بين كل الأجهزة)
+   ← window.storage (يعمل فقط داخل معاينة Claude) ← تخزين محلي بالمتصفح (احتياطي أخير يعمل دائماً). */
+const CLOUD_AVAILABLE = (function(){
+  try{ return !!(window.storage && typeof window.storage.get==='function' && typeof window.storage.set==='function'); }
+  catch(e){ return false; }
+})();
+function firebaseReady(){ return !!window.__firebaseReadyFlag; }
+window._naklStorageMode = function(){ return firebaseReady() ? 'firebase' : (CLOUD_AVAILABLE ? 'cloud' : 'local'); };
+
+function localGet(key){
+  try{ const raw = window.localStorage.getItem('nakl_'+key); return raw ? JSON.parse(raw) : null; }
+  catch(e){ return null; }
+}
+function localSet(key, value){
+  try{ window.localStorage.setItem('nakl_'+key, JSON.stringify(value)); return true; }
+  catch(e){ console.error('local storage set failed for', key, e); return false; }
+}
+
+async function claudeGet(key, attempt){
+  attempt = attempt||1;
+  try{
+    const r = await window.storage.get(key, true);
+    return r ? JSON.parse(r.value) : null;
+  }catch(e){
+    const msg = (e && e.message) || '';
+    if(attempt < 3 && !/not found/i.test(msg)){ await wait(400*attempt); return claudeGet(key, attempt+1); }
+    return null;
+  }
+}
+async function claudeSet(key, value, attempt){
+  attempt = attempt||1;
+  try{
+    const res = await window.storage.set(key, JSON.stringify(value), true);
+    if(!res) throw new Error('empty response');
+    return true;
+  }catch(e){
+    console.error('claude storage set failed for', key, e);
+    if(attempt < 3){ await wait(500*attempt); return claudeSet(key, value, attempt+1); }
+    return false;
+  }
+}
+
+async function sGet(key){
+  if(firebaseReady()){
+    try{ return await window.__firebaseGet(key); }
+    catch(e){ console.error('firebase get failed for', key, e); }
+  }
+  if(CLOUD_AVAILABLE){
+    const v = await claudeGet(key);
+    if(v !== null) return v;
+  }
+  return localGet(key);
+}
+
+async function sSet(key, value){
+  if(value===undefined) value = null;
+  if(firebaseReady()){
+    try{ const ok = await window.__firebaseSet(key, value); if(ok) return true; }
+    catch(e){ console.error('firebase set failed for', key, e); }
+  }
+  if(CLOUD_AVAILABLE){
+    const ok = await claudeSet(key, value);
+    if(ok) return true;
+  }
+  const ok = localSet(key, value);
+  if(!ok) showToast('تعذّر حفظ البيانات — تحقق من الاتصال', true);
+  return ok;
+}
+
+/* ===================== Theme ===================== */
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur==='dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next==='dark'?'dark':'light');
+  document.querySelectorAll('.theme-toggle').forEach(b=> b.textContent = next==='dark' ? '☀' : '☾');
+  if(state.phone) sSet('theme_pref:'+state.phone, next);
+}
+
+/* ===================== Login ===================== */
+function showLoginStep(step){
+  document.getElementById('loginStepPhone').classList.toggle('hidden', step!=='phone');
+  document.getElementById('loginStepNew').classList.toggle('hidden', step!=='new');
+  document.getElementById('loginStepJoin').classList.toggle('hidden', step!=='join');
+  document.getElementById('loginStepWaiting').classList.toggle('hidden', step!=='waiting');
+  document.getElementById('loginError').classList.add('hidden');
+}
+function loginErr(msg){ const el=document.getElementById('loginError'); el.textContent=msg; el.classList.remove('hidden'); }
+let pendingPhone=null;
+let pendingInvite=null;
+
+function getInviteFromUrl(){
+  const params = new URLSearchParams(window.location.search);
+  const accountId = params.get('invite_a');
+  const token = params.get('invite_t');
+  return (accountId && token) ? {accountId, token} : null;
+}
+
+async function handlePhoneSubmit(){
+  const cc = document.getElementById('loginCountry').value || '+964';
+  const local = document.getElementById('loginPhone').value.trim().replace(/^0+/, '');
+  if(local.replace(/\D/g,'').length<6){ loginErr('أدخل رقم هاتف صحيح.'); return; }
+  const phone = normalizePhone(cc + local);
+  document.getElementById('loginLoading').classList.remove('hidden');
+  const mapping = await sGet('account_by_phone:'+phone);
+  document.getElementById('loginLoading').classList.add('hidden');
+  pendingPhone = phone;
+  if(mapping && mapping.accountId){
+    await tryEnterExistingAccount(phone, mapping.accountId);
+  }else{
+    const invite = getInviteFromUrl();
+    if(invite){
+      const inviteAccount = await sGet('account:'+invite.accountId);
+      if(inviteAccount && inviteAccount.inviteToken===invite.token){
+        pendingInvite = invite;
+        document.getElementById('joinCompanyName').textContent = inviteAccount.companyName;
+        showLoginStep('join');
+        return;
+      }
+    }
+    showLoginStep('new');
+  }
+}
+
+async function handleCreateAccount(){
+  const companyName = document.getElementById('newCompanyName').value.trim();
+  const ownerName = document.getElementById('newOwnerName').value.trim();
+  if(!companyName || !ownerName){ loginErr('يرجى تعبئة اسم الشركة واسمك.'); return; }
+  const accountId = uid();
+  const account = {accountId, companyName, ownerPhone:pendingPhone, ownerName, createdAt:Date.now(), openingCashBalance:0, inviteToken:uid(), gpsTrackingEnabled:false};
+  const users = [{id:uid(), phone:pendingPhone, name:ownerName, role:'admin', driverId:null, active:true, permissions:null}];
+  await sSet('account:'+accountId, account);
+  await sSet('account_by_phone:'+pendingPhone, {accountId});
+  await sSet('users:'+accountId, users);
+  for(const k of ['customers','drivers','vehicles','trips','fuelEntries','maintenanceEntries','invoices','advances','cashEntries','payrollRuns']){
+    await sSet(k+':'+accountId, []);
+  }
+  const deviceId = getDeviceId();
+  await sSet('device_state:'+accountId+':'+pendingPhone, {authorized:{[deviceId]:{label:getDeviceLabel(), addedAt:Date.now()}}, pending:{}});
+  await enterAccount(pendingPhone, accountId);
+}
+
+const DEFAULT_MEMBER_PERMISSIONS = {dashboard:false, trips:true, customers:true, drivers:false, vehicles:false,
+  fleetops:false, invoices:false, cash:false, payroll:false, reports:false, users:false, team:false, tracking:false, settings:false};
+
+async function handleJoinTeam(){
+  const name = document.getElementById('joinUserName').value.trim();
+  if(!name){ loginErr('يرجى إدخال اسمك.'); return; }
+  if(!pendingInvite){ loginErr('رابط الدعوة غير صالح. ارجع وأعد المحاولة.'); return; }
+  const accountId = pendingInvite.accountId;
+  document.getElementById('loginLoading').classList.remove('hidden');
+  const account = await sGet('account:'+accountId);
+  if(!account || account.inviteToken!==pendingInvite.token){
+    document.getElementById('loginLoading').classList.add('hidden');
+    loginErr('رابط الدعوة غير صالح أو أُلغي من قِبل صاحب الحساب.'); return;
+  }
+  const users = (await sGet('users:'+accountId)) || [];
+  if(users.some(u=>u.phone===pendingPhone)){
+    document.getElementById('loginLoading').classList.add('hidden');
+    loginErr('هذا الرقم مسجّل بالفعل ضمن هذا الحساب.'); return;
+  }
+  users.push({id:uid(), phone:pendingPhone, name, role:'member', driverId:null, active:true,
+    permissions:{...DEFAULT_MEMBER_PERMISSIONS}, isFieldWorker:true, invitedViaLink:true});
+  await sSet('users:'+accountId, users);
+  await sSet('account_by_phone:'+pendingPhone, {accountId});
+  const deviceId = getDeviceId();
+  await sSet('device_state:'+accountId+':'+pendingPhone, {authorized:{[deviceId]:{label:getDeviceLabel(), addedAt:Date.now()}}, pending:{}});
+  await enterAccount(pendingPhone, accountId);
+}
+
+/* ===================== موافقة الأجهزة الجديدة (بديل مجاني عن SMS) ===================== */
+async function tryEnterExistingAccount(phone, accountId){
+  const deviceId = getDeviceId();
+  const key = 'device_state:'+accountId+':'+phone;
+  const devState = (await sGet(key)) || {authorized:{}, pending:{}};
+  devState.authorized = devState.authorized || {};
+  devState.pending = devState.pending || {};
+  if(devState.authorized[deviceId]){
+    await enterAccount(phone, accountId);
+    return;
+  }
+  devState.pending[deviceId] = {label:getDeviceLabel(), requestedAt:Date.now(), status:'pending'};
+  await sSet(key, devState);
+  showLoginStep('waiting');
+  startWaitingForApproval(phone, accountId, deviceId);
+}
+
+let _waitListener=null;
+function startWaitingForApproval(phone, accountId, deviceId){
+  document.getElementById('waitingStatusText').textContent='بانتظار الموافقة من جهازك الآخر المسجّل دخول بنفس الرقم...';
+  if(_waitListener){ _waitListener.stop(); _waitListener=null; }
+  _waitListener = sListen('device_state:'+accountId+':'+phone, (devState)=>{
+    if(!devState) return;
+    if((devState.authorized||{})[deviceId]){
+      _waitListener.stop(); _waitListener=null;
+      enterAccount(phone, accountId);
+      return;
+    }
+    const p = (devState.pending||{})[deviceId];
+    if(p && p.status==='denied'){
+      _waitListener.stop(); _waitListener=null;
+      document.getElementById('waitingStatusText').textContent='تم رفض طلب الدخول من هذا الجهاز. أعد المحاولة أو تواصل مع صاحب الرقم.';
+    }
+  });
+}
+function cancelDeviceWait(){
+  if(_waitListener){ _waitListener.stop(); _waitListener=null; }
+  showLoginStep('phone');
+}
+
+let _incomingListener=null;
+let _seenPendingIds = new Set();
+function startIncomingDeviceRequestListener(){
+  if(!state.phone || !state.accountId) return;
+  if(_incomingListener){ _incomingListener.stop(); _incomingListener=null; }
+  _seenPendingIds = new Set();
+  const myDeviceId = getDeviceId();
+  _incomingListener = sListen('device_state:'+state.accountId+':'+state.phone, (devState)=>{
+    if(!devState) return;
+    const pending = devState.pending || {};
+    for(const devId in pending){
+      if(devId===myDeviceId) continue;
+      if(pending[devId].status!=='pending') continue;
+      if(_seenPendingIds.has(devId)) continue;
+      _seenPendingIds.add(devId);
+      showDeviceApprovalBanner(devId, pending[devId].label);
+    }
+    // نظّف قائمة "شوهد سابقاً" من أي طلب لم يعد pending (رُفض/قُبل) حتى تُقبل إعادة محاولته لاحقاً
+    for(const seenId of Array.from(_seenPendingIds)){
+      const p = pending[seenId];
+      if(!p || p.status!=='pending') _seenPendingIds.delete(seenId);
+    }
+  });
+}
+let _currentApprovalDeviceId=null;
+function showDeviceApprovalBanner(deviceId, label){
+  _currentApprovalDeviceId = deviceId;
+  document.getElementById('devApprovalLabel').textContent = label||'جهاز غير معروف';
+  document.getElementById('deviceApprovalBanner').classList.remove('hidden');
+}
+async function respondDeviceRequest(allow){
+  const deviceId = _currentApprovalDeviceId;
+  document.getElementById('deviceApprovalBanner').classList.add('hidden');
+  if(!deviceId || !state.accountId) return;
+  const key = 'device_state:'+state.accountId+':'+state.phone;
+  const devState = (await sGet(key)) || {authorized:{}, pending:{}};
+  devState.pending = devState.pending || {};
+  devState.authorized = devState.authorized || {};
+  if(allow){
+    const label = (devState.pending[deviceId] && devState.pending[deviceId].label) || 'جهاز';
+    devState.authorized[deviceId] = {label, addedAt:Date.now()};
+    delete devState.pending[deviceId];
+  }else if(devState.pending[deviceId]){
+    devState.pending[deviceId].status='denied';
+  }
+  await sSet(key, devState);
+  _seenPendingIds.delete(deviceId);
+  _currentApprovalDeviceId=null;
+}
+
+async function enterAccount(phone, accountId){
+  document.getElementById('loginLoading').classList.remove('hidden');
+  const account = await sGet('account:'+accountId);
+  const users = (await sGet('users:'+accountId)) || [];
+  const me = users.find(u=>u.phone===phone && u.active);
+  if(!account || !me){
+    document.getElementById('loginLoading').classList.add('hidden');
+    loginErr('تعذّر الدخول. قد يكون الوصول لهذا الرقم قد أُلغي.');
+    return;
+  }
+  state.phone=phone; state.accountId=accountId; state.account=account; state.role=me.role; state.myDriverId=me.driverId; state.users=users;
+  state.permissions = me.permissions || null;
+  state.isFieldWorker = !!me.isFieldWorker;
+  startIncomingDeviceRequestListener();
+  if(state.isFieldWorker && state.role!=='admin') startGpsAutoTracking();
+  state.customers=(await sGet('customers:'+accountId))||[];
+  state.drivers=(await sGet('drivers:'+accountId))||[];
+  state.vehicles=(await sGet('vehicles:'+accountId))||[];
+  state.trips=(await sGet('trips:'+accountId))||[];
+  state.fuelEntries=(await sGet('fuelEntries:'+accountId))||[];
+  state.maintenanceEntries=(await sGet('maintenanceEntries:'+accountId))||[];
+  state.invoices=(await sGet('invoices:'+accountId))||[];
+  state.advances=(await sGet('advances:'+accountId))||[];
+  state.cashEntries=(await sGet('cashEntries:'+accountId))||[];
+  state.payrollRuns=(await sGet('payrollRuns:'+accountId))||[];
+
+  const themePref = await sGet('theme_pref:'+phone);
+  if(themePref==='dark'){ document.documentElement.setAttribute('data-theme','dark'); document.querySelectorAll('.theme-toggle').forEach(b=>b.textContent='☀'); }
+
+  document.getElementById('loginLoading').classList.add('hidden');
+  document.getElementById('loginScreen').classList.add('hidden');
+
+  if(state.role==='admin' || state.role==='member'){
+    document.getElementById('appScreen').classList.remove('hidden');
+    document.getElementById('topbarCompanyName').textContent = account.companyName;
+    document.getElementById('sidebarAccountTag').innerHTML = 'مسجّل باسم<br><b style="color:var(--text)">'+me.name+'</b>';
+    applyPermissionFiltering();
+    showView(state.role==='admin' ? 'dashboard' : 'trips');
+  }else{
+    document.getElementById('driverScreen').classList.remove('hidden');
+    document.getElementById('driverTopCompany').textContent = account.companyName;
+    showDriverView('home');
+    startGpsAutoTracking();
+  }
+}
+
+function logout(){
+  if(_incomingListener){ _incomingListener.stop(); _incomingListener=null; }
+  stopGpsAutoTracking();
+  Object.assign(state, {phone:null, accountId:null, account:null, role:null, myDriverId:null, permissions:null, isFieldWorker:false, users:[], customers:[], drivers:[], vehicles:[], trips:[], fuelEntries:[], maintenanceEntries:[], invoices:[], advances:[], cashEntries:[], payrollRuns:[]});
+  document.getElementById('appScreen').classList.add('hidden');
+  document.getElementById('driverScreen').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginPhone').value='';
+  showLoginStep('phone');
+}
+
+/* ===================== Persist ===================== */
+const persist = {
+  customers:()=>sSet('customers:'+state.accountId, state.customers),
+  drivers:()=>sSet('drivers:'+state.accountId, state.drivers),
+  vehicles:()=>sSet('vehicles:'+state.accountId, state.vehicles),
+  trips:()=>sSet('trips:'+state.accountId, state.trips),
+  fuelEntries:()=>sSet('fuelEntries:'+state.accountId, state.fuelEntries),
+  maintenanceEntries:()=>sSet('maintenanceEntries:'+state.accountId, state.maintenanceEntries),
+  invoices:()=>sSet('invoices:'+state.accountId, state.invoices),
+  advances:()=>sSet('advances:'+state.accountId, state.advances),
+  cashEntries:()=>sSet('cashEntries:'+state.accountId, state.cashEntries),
+  users:()=>sSet('users:'+state.accountId, state.users),
+  account:()=>sSet('account:'+state.accountId, state.account),
+  payrollRuns:()=>sSet('payrollRuns:'+state.accountId, state.payrollRuns)
+};
+function pushCash(entry){ state.cashEntries.push(Object.assign({id:uid(), date:todayStr()}, entry)); }
+
+/* ===================== Lookups ===================== */
+function customerName(id){ const c=state.customers.find(x=>x.id===id); return c?c.name:'—'; }
+function driverName(id){ const d=state.drivers.find(x=>x.id===id); return d?d.name:'—'; }
+function vehicleName(id){ const v=state.vehicles.find(x=>x.id===id); return v? (v.internalNo||v.plate||'آلية'):'—'; }
+function vehicleObj(id){ return state.vehicles.find(x=>x.id===id); }
+
+/* ===================== Calc: trip P&L ===================== */
+function tripExpTotal(t){ return (t.expenses||[]).reduce((s,e)=>s+(Number(e.amount)||0),0); }
+function tripNet(t){ return (Number(t.revenue)||0) - tripExpTotal(t); }
+function tripMargin(t){ const r=Number(t.revenue)||0; return r>0 ? (tripNet(t)/r*100) : 0; }
+/* driver commission = نسبة من صافي الربح، تُحتسب فقط إذا كانت طريقة أجر السائق "نسبة من صافي الربح" */
+function tripDriverCommission(t){
+  const d = state.drivers.find(x=>x.id===t.driverId);
+  if(!d || d.payType!=='percent') return null;
+  const pct = Number(d.commissionPercent)||0;
+  return tripNet(t) * (pct/100);
+}
+
+function splitBarHTML(items){
+  const total = items.reduce((s,i)=>s+Math.max(i.v,0),0) || 1;
+  return '<div class="split-bar">' + items.map(i=>{
+    const pct = Math.max(i.v,0)/total*100;
+    return `<div class="split-seg" style="flex-grow:${pct};background:${i.color}">${pct>=14?fmt(i.v):''}</div>`;
+  }).join('') + '</div>';
+}
+
+/* ===================== Router ===================== */
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
+function canAccessView(view){
+  if(state.role==='admin') return true;
+  if(!state.permissions) return true;
+  return !!state.permissions[view];
+}
+function showView(view){
+  if(!canAccessView(view)){
+    const firstAllowed = Object.keys(state.permissions||{}).find(k=>state.permissions[k]);
+    view = firstAllowed || 'trips';
+  }
+  if(state.currentView==='tracking' && view!=='tracking') stopTrackingListeners();
+  state.currentView=view;
+  document.querySelectorAll('.sidebar button').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  document.getElementById('sidebar').classList.remove('open');
+  const R = {dashboard:renderDashboard, trips:renderTrips, customers:renderCustomers, drivers:renderDrivers,
+    vehicles:renderVehicles, fleetops:renderFleetOps, invoices:renderInvoices, cash:renderCash,
+    payroll:renderPayroll, reports:renderReports, users:renderUsers, settings:renderSettings,
+    team:renderTeam, tracking:renderTracking};
+  (R[view]||renderDashboard)();
+  document.getElementById('mainContent').scrollTop=0;
+}
+function applyPermissionFiltering(){
+  document.querySelectorAll('#appScreen .sidebar button[data-view]').forEach(b=>{
+    const v = b.getAttribute('data-view');
+    b.classList.toggle('hidden', !canAccessView(v));
+  });
+  document.getElementById('topbarRoleLabel') && (document.getElementById('topbarRoleLabel').textContent = state.role==='admin' ? 'لوحة المسؤول' : 'عضو فريق — صلاحيات محدودة');
+}
+
+/* ===================== Dashboard ===================== */
+function renderDashboard(){
+  const trips = state.trips;
+  const totalRevenue = trips.reduce((s,t)=>s+(Number(t.revenue)||0),0);
+  const totalExp = trips.reduce((s,t)=>s+tripExpTotal(t),0);
+  const netProfit = totalRevenue-totalExp;
+  const openAdvances = state.advances.filter(a=>a.status==='open').reduce((s,a)=>s+(Number(a.amount)-Number(a.settledAmount||0)),0);
+  const receivables = state.invoices.filter(i=>i.status!=='paid'&&i.status!=='cancelled').reduce((s,i)=>{
+    const paid=(i.payments||[]).reduce((p,x)=>p+Number(x.amount),0); return s+(Number(i.amount)-paid);
+  },0);
+  const cashBalance = (Number(state.account.openingCashBalance)||0) + state.cashEntries.reduce((s,c)=> s + (c.type==='in'?Number(c.amount):-Number(c.amount)),0);
+
+  // vehicle profitability
+  const vehStats = state.vehicles.map(v=>{
+    const vTrips = trips.filter(t=>t.vehicleId===v.id);
+    const rev = vTrips.reduce((s,t)=>s+(Number(t.revenue)||0),0);
+    const exp = vTrips.reduce((s,t)=>s+tripExpTotal(t),0);
+    const maint = state.maintenanceEntries.filter(m=>m.vehicleId===v.id).reduce((s,m)=>s+(Number(m.cost)||0),0);
+    return {v, net: rev-exp-maint};
+  }).sort((a,b)=>b.net-a.net);
+  const bestVeh = vehStats[0];
+  const worstVeh = vehStats[vehStats.length-1];
+
+  const lossTrips = trips.filter(t=> (t.status==='completed'||t.status==='invoiced'||t.status==='closed') && tripNet(t)<0);
+
+  // alerts
+  const alerts=[];
+  const soon = 30;
+  state.vehicles.forEach(v=>{
+    if(v.insuranceExpiry && daysBetween(todayStr(), v.insuranceExpiry) <= soon) alerts.push({t:'warn', m:`تأمين الآلية "${v.internalNo||v.plate}" ينتهي خلال ${daysBetween(todayStr(),v.insuranceExpiry)} يوم`});
+    if(v.licenseExpiry && daysBetween(todayStr(), v.licenseExpiry) <= soon) alerts.push({t:'warn', m:`ترخيص الآلية "${v.internalNo||v.plate}" ينتهي خلال ${daysBetween(todayStr(),v.licenseExpiry)} يوم`});
+  });
+  state.drivers.forEach(d=>{
+    if(d.licenseExpiry && daysBetween(todayStr(), d.licenseExpiry) <= soon) alerts.push({t:'warn', m:`رخصة السائق "${d.name}" تنتهي خلال ${daysBetween(todayStr(),d.licenseExpiry)} يوم`});
+  });
+  state.invoices.forEach(i=>{
+    const paid=(i.payments||[]).reduce((p,x)=>p+Number(x.amount),0);
+    if(i.status!=='paid' && i.status!=='cancelled' && i.dueDate && i.dueDate<todayStr() && paid<Number(i.amount)){
+      alerts.push({t:'danger', m:`فاتورة ${i.invoiceNo} متأخرة عن الاستحقاق للعميل ${customerName(i.customerId)}`});
+    }
+  });
+  lossTrips.forEach(t=> alerts.push({t:'danger', m:`الرحلة ${t.tripNo} أُغلقت بخسارة (${fmt(tripNet(t))})`}));
+
+  const html = `
+  <div class="page-head">
+    <div><div class="page-title disp">لوحة التحكم</div><div class="page-sub">نظرة تنفيذية على ${state.account.companyName}</div></div>
+  </div>
+  <div class="grid grid-4">
+    <div class="metric"><div class="metric-l">إيرادات الرحلات</div><div class="metric-v mono">${fmt(totalRevenue)}</div></div>
+    <div class="metric"><div class="metric-l">مصاريف الرحلات</div><div class="metric-v mono">${fmt(totalExp)}</div></div>
+    <div class="metric"><div class="metric-l">صافي الربح</div><div class="metric-v mono ${netProfit<0?'neg':'pos'}">${fmt(netProfit)}</div></div>
+    <div class="metric"><div class="metric-l">رصيد الصندوق التقديري</div><div class="metric-v mono ${cashBalance<0?'neg':''}">${fmt(cashBalance)}</div></div>
+    <div class="metric"><div class="metric-l">ذمم عملاء غير محصّلة</div><div class="metric-v mono">${fmt(receivables)}</div></div>
+    <div class="metric"><div class="metric-l">عهد سائقين مفتوحة</div><div class="metric-v mono">${fmt(openAdvances)}</div></div>
+    <div class="metric"><div class="metric-l">أفضل آلية ربحاً</div><div class="metric-v" style="font-size:14px">${bestVeh? (bestVeh.v.internalNo||bestVeh.v.plate)+' — '+fmt(bestVeh.net) : '—'}</div></div>
+    <div class="metric"><div class="metric-l">آلية تحتاج مراجعة</div><div class="metric-v" style="font-size:14px">${worstVeh && worstVeh.net<0 ? (worstVeh.v.internalNo||worstVeh.v.plate)+' — '+fmt(worstVeh.net) : 'لا يوجد'}</div></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">التنبيهات الذكية (${alerts.length})</div>
+    ${alerts.length ? alerts.slice(0,10).map(a=>`<div class="alert-item ${a.t}">${a.m}</div>`).join('') : '<div style="font-size:12.5px;color:var(--muted);font-weight:700">لا توجد تنبيهات حالياً.</div>'}
+  </div>
+
+  <div class="card">
+    <div class="section-title">آخر الرحلات</div>
+    ${trips.length? `<div class="list">${[...trips].sort((a,b)=>b.createdAt-a.createdAt).slice(0,5).map(tripListItemHTML).join('')}</div>`
+      : `<div class="empty-state"><p>لا توجد رحلات مسجّلة بعد.</p><button class="btn btn-y" onclick="openTripModal()">تسجيل أول رحلة</button></div>`}
+  </div>
+  `;
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+/* ===================== Trips ===================== */
+function tripListItemHTML(t){
+  const net = tripNet(t);
+  const st = TRIP_STATUS[t.status] || TRIP_STATUS.new;
+  const commission = tripDriverCommission(t);
+  return `
+  <div class="list-item">
+    <div class="li-top">
+      <div>
+        <div class="li-title mono">${t.tripNo} <span class="badge ${st.c}">${st.l}</span></div>
+        <div class="li-meta">${fmtDate(t.date)} · ${customerName(t.customerId)} · ${vehicleName(t.vehicleId)} · السائق: ${driverName(t.driverId)}</div>
+        <div class="li-meta">${esc(t.origin||'—')} ← ${esc(t.destination||'—')}</div>
+      </div>
+      <div class="li-actions">
+        <button class="btn btn-icon" onclick="openTripModal('${t.id}')" title="تعديل">✎</button>
+        <button class="btn btn-icon" onclick="deleteTrip('${t.id}')" title="حذف">✕</button>
+      </div>
+    </div>
+    <table style="margin-top:10px"><tr><th>الإيراد</th><th>المصاريف</th><th>صافي الربح</th><th>الهامش</th>${commission!==null?'<th>نسبة السائق</th>':''}</tr>
+      <tr class="${net<0?'neg':''}"><td class="mono">${fmt(t.revenue)}</td><td class="mono">${fmt(tripExpTotal(t))}</td><td class="mono">${fmt(net)}</td><td class="mono">${tripMargin(t).toFixed(0)}%</td>${commission!==null?`<td class="mono">${fmt(commission)}</td>`:''}</tr>
+    </table>
+  </div>`;
+}
+
+function renderTrips(){
+  const trips=[...state.trips].sort((a,b)=>b.createdAt-a.createdAt);
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head">
+    <div><div class="page-title disp">الرحلات</div><div class="page-sub">كل رحلة مركز ربح وخسارة مستقل</div></div>
+    <button class="btn btn-y" onclick="openTripModal()">+ رحلة جديدة</button>
+  </div>
+  ${trips.length? `<div class="list">${trips.map(tripListItemHTML).join('')}</div>` : `<div class="card"><div class="empty-state"><p>لا توجد رحلات بعد.</p><button class="btn btn-y" onclick="openTripModal()">تسجيل أول رحلة</button></div></div>`}
+  `;
+}
+
+function openTripModal(tripId){
+  const t = tripId? state.trips.find(x=>x.id===tripId) : null;
+  const custOpt = state.customers.map(c=>`<option value="${c.id}" ${t&&t.customerId===c.id?'selected':''}>${c.name}</option>`).join('');
+  const vehOpt = state.vehicles.map(v=>`<option value="${v.id}" ${t&&t.vehicleId===v.id?'selected':''}>${v.internalNo||v.plate}</option>`).join('');
+  const drvOpt = state.drivers.map(d=>`<option value="${d.id}" ${t&&t.driverId===d.id?'selected':''}>${d.name}</option>`).join('');
+  const statusOpt = Object.entries(TRIP_STATUS).map(([k,v])=>`<option value="${k}" ${t&&t.status===k?'selected':''}>${v.l}</option>`).join('');
+  const tripNo = t? t.tripNo : ('TR-'+new Date().getFullYear()+'-'+String(state.trips.length+1).padStart(4,'0'));
+
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head"><h3 class="mono">${t?'تعديل رحلة '+t.tripNo:'رحلة جديدة — '+tripNo}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+      <div class="form-grid">
+        <div class="field"><label>العميل</label><select id="tf_customer"><option value="">—</option>${custOpt}</select></div>
+        <div class="field"><label>التاريخ</label><input type="date" id="tf_date" value="${t?t.date:todayStr()}"></div>
+        <div class="field"><label>الآلية</label><select id="tf_vehicle"><option value="">—</option>${vehOpt}</select></div>
+        <div class="field"><label>السائق</label><select id="tf_driver"><option value="">—</option>${drvOpt}</select></div>
+        <div class="field"><label>نقطة الانطلاق</label><input type="text" id="tf_origin" value="${t?esc(t.origin):''}"></div>
+        <div class="field"><label>نقطة الوصول</label><input type="text" id="tf_dest" value="${t?esc(t.destination):''}"></div>
+        <div class="field"><label>نوع الحمولة</label><input type="text" id="tf_cargo" placeholder="بضائع / حفر بئر / معدات..." value="${t?esc(t.cargoType):''}"></div>
+        <div class="field"><label>المسافة (كم) اختياري</label><input type="number" id="tf_distance" value="${t?t.distanceKm||'':''}"></div>
+        <div class="field"><label>إيراد الرحلة</label><input type="number" id="tf_revenue" value="${t?t.revenue:''}"></div>
+        <div class="field"><label>الحالة</label><select id="tf_status">${statusOpt}</select></div>
+        <div class="field full"><label>ملاحظات</label><textarea id="tf_notes">${t?t.notes||'':''}</textarea></div>
+      </div>
+
+      <div class="section-title" style="margin-top:6px">مصاريف الرحلة</div>
+      <div id="tf_expenses"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addExpRow()">+ إضافة مصروف</button>
+
+      <div class="card" style="margin-top:14px;box-shadow:none">
+        <div id="tf_preview"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+        <button class="btn btn-y" onclick="saveTrip(${t?`'${t.id}'`:'null'}, '${tripNo}')">${t?'حفظ التعديلات':'حفظ الرحلة'}</button>
+      </div>
+    </div>
+  </div>`;
+
+  window._tfExpenses = t ? JSON.parse(JSON.stringify(t.expenses||[])) : [];
+  renderExpRows();
+  document.getElementById('tf_revenue').addEventListener('input', updateTripPreview);
+  document.getElementById('tf_driver').addEventListener('change', updateTripPreview);
+  updateTripPreview();
+}
+
+function renderExpRows(){
+  const wrap = document.getElementById('tf_expenses');
+  wrap.innerHTML = window._tfExpenses.map((e,i)=>`
+    <div class="exp-row">
+      <select onchange="window._tfExpenses[${i}].type=this.value">
+        ${Object.entries(EXP_TYPES).map(([k,l])=>`<option value="${k}" ${e.type===k?'selected':''}>${l}</option>`).join('')}
+      </select>
+      <input type="number" placeholder="المبلغ" value="${e.amount||''}" oninput="window._tfExpenses[${i}].amount=this.value; updateTripPreview();">
+      <input type="text" placeholder="ملاحظة" value="${esc(e.note)}" oninput="window._tfExpenses[${i}].note=this.value">
+      <button class="btn btn-icon btn-sm" onclick="removeExpRow(${i})">✕</button>
+    </div>`).join('') || '<div style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px">لا توجد مصاريف مضافة.</div>';
+}
+function addExpRow(){ window._tfExpenses.push({type:'fuel', amount:'', note:''}); renderExpRows(); updateTripPreview(); }
+function removeExpRow(i){ window._tfExpenses.splice(i,1); renderExpRows(); updateTripPreview(); }
+
+function updateTripPreview(){
+  const revenue = Number(document.getElementById('tf_revenue').value)||0;
+  const expTotal = window._tfExpenses.reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const net = revenue-expTotal;
+  const margin = revenue>0? (net/revenue*100):0;
+  const driverId = document.getElementById('tf_driver').value;
+  const drv = state.drivers.find(x=>x.id===driverId);
+  let commissionRow = '';
+  if(drv && drv.payType==='percent'){
+    const pct = Number(drv.commissionPercent)||0;
+    const commission = net*(pct/100);
+    commissionRow = `<div class="live-row" style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-top:1px dashed var(--border);margin-top:6px">
+      <span>نسبة السائق من صافي الربح (${pct}%)</span><span class="mono" style="font-weight:800">${fmt(commission)}</span></div>`;
+  }
+  document.getElementById('tf_preview').innerHTML = `
+    <table><tr><th>الإيراد</th><th>إجمالي المصاريف</th><th>صافي الربح</th><th>الهامش</th></tr>
+    <tr class="${net<0?'neg':''}"><td class="mono">${fmt(revenue)}</td><td class="mono">${fmt(expTotal)}</td><td class="mono">${fmt(net)}</td><td class="mono">${margin.toFixed(0)}%</td></tr></table>
+    ${commissionRow}`;
+}
+
+async function saveTrip(tripId, tripNo){
+  const revenue = Number(document.getElementById('tf_revenue').value)||0;
+  if(revenue<=0){ showToast('أدخل إيراد الرحلة', true); return; }
+  const data = {
+    customerId: document.getElementById('tf_customer').value,
+    date: document.getElementById('tf_date').value || todayStr(),
+    vehicleId: document.getElementById('tf_vehicle').value,
+    driverId: document.getElementById('tf_driver').value,
+    origin: document.getElementById('tf_origin').value.trim(),
+    destination: document.getElementById('tf_dest').value.trim(),
+    cargoType: document.getElementById('tf_cargo').value.trim(),
+    distanceKm: Number(document.getElementById('tf_distance').value)||0,
+    revenue, status: document.getElementById('tf_status').value,
+    notes: document.getElementById('tf_notes').value.trim(),
+    expenses: window._tfExpenses.filter(e=>Number(e.amount)>0).map(e=>({id:e.id||uid(), type:e.type, amount:Number(e.amount), note:e.note||'', date:todayStr()}))
+  };
+  if(tripId){
+    Object.assign(state.trips.find(t=>t.id===tripId), data);
+  }else{
+    state.trips.push(Object.assign({id:uid(), tripNo, createdAt:Date.now()}, data));
+  }
+  await persist.trips();
+  closeModal(); showToast('تم حفظ الرحلة'); showView(state.currentView);
+}
+
+async function deleteTrip(id){
+  if(!confirm('حذف هذه الرحلة نهائياً؟')) return;
+  state.trips = state.trips.filter(t=>t.id!==id);
+  await persist.trips(); showToast('تم الحذف'); showView(state.currentView);
+}
+
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+
+/* ===================== Customers ===================== */
+function renderCustomers(){
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head"><div><div class="page-title disp">العملاء</div><div class="page-sub">إدارة العملاء والعقود</div></div>
+  <button class="btn btn-y" onclick="openCustomerModal()">+ عميل جديد</button></div>
+  ${state.customers.length? `<div class="list">${state.customers.map(c=>{
+    const custTrips = state.trips.filter(t=>t.customerId===c.id);
+    const rev = custTrips.reduce((s,t)=>s+(Number(t.revenue)||0),0);
+    return `<div class="list-item"><div class="li-top">
+      <div><div class="li-title">${c.name}</div><div class="li-meta">${c.phone?'هاتف: '+c.phone+' · ':''}عدد الرحلات: ${custTrips.length} · إجمالي الإيراد: ${fmt(rev)}</div></div>
+      <div class="li-actions"><button class="btn btn-icon" onclick="openCustomerModal('${c.id}')">✎</button><button class="btn btn-icon" onclick="deleteCustomer('${c.id}')">✕</button></div>
+    </div></div>`;
+  }).join('')}</div>` : `<div class="card"><div class="empty-state"><p>لا يوجد عملاء بعد.</p><button class="btn btn-y" onclick="openCustomerModal()">إضافة أول عميل</button></div></div>`}
+  `;
+}
+function openCustomerModal(id){
+  const c = id? state.customers.find(x=>x.id===id):null;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><h3>${c?'تعديل عميل':'عميل جديد'}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="field"><label>اسم العميل</label><input type="text" id="cf_name" value="${c?esc(c.name):''}"></div>
+    <div class="field"><label>الهاتف</label><input type="tel" id="cf_phone" value="${c?esc(c.phone):''}"></div>
+    <div class="field"><label>العنوان</label><input type="text" id="cf_addr" value="${c?esc(c.address):''}"></div>
+    <div class="field"><label>ملاحظات</label><textarea id="cf_notes">${c?c.notes||'':''}</textarea></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button><button class="btn btn-y" onclick="saveCustomer(${c?`'${c.id}'`:'null'})">حفظ</button></div>
+  </div></div>`;
+}
+async function saveCustomer(id){
+  const name=document.getElementById('cf_name').value.trim();
+  if(!name){ showToast('أدخل اسم العميل', true); return; }
+  const data={name, phone:document.getElementById('cf_phone').value.trim(), address:document.getElementById('cf_addr').value.trim(), notes:document.getElementById('cf_notes').value.trim()};
+  if(id) Object.assign(state.customers.find(x=>x.id===id), data);
+  else state.customers.push(Object.assign({id:uid()}, data));
+  await persist.customers(); closeModal(); showToast('تم الحفظ'); renderCustomers();
+}
+async function deleteCustomer(id){
+  if(!confirm('حذف هذا العميل؟')) return;
+  state.customers=state.customers.filter(x=>x.id!==id); await persist.customers(); showToast('تم الحذف'); renderCustomers();
+}
+
+/* ===================== Drivers + Advances ===================== */
+function renderDrivers(){
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head"><div><div class="page-title disp">السائقون والعهد</div><div class="page-sub">بيانات السائقين والسلف والعهد المفتوحة</div></div>
+  <button class="btn btn-y" onclick="openDriverModal()">+ سائق جديد</button></div>
+  ${state.drivers.length? `<div class="list">${state.drivers.map(driverCardHTML).join('')}</div>` : `<div class="card"><div class="empty-state"><p>لا يوجد سائقون بعد.</p><button class="btn btn-y" onclick="openDriverModal()">إضافة أول سائق</button></div></div>`}
+  `;
+}
+function driverCardHTML(d){
+  const advs = state.advances.filter(a=>a.driverId===d.id);
+  const openBal = advs.filter(a=>a.status==='open').reduce((s,a)=>s+(Number(a.amount)-Number(a.settledAmount||0)),0);
+  const licWarn = d.licenseExpiry && daysBetween(todayStr(), d.licenseExpiry) <= 30;
+  return `
+  <div class="list-item">
+    <div class="li-top">
+      <div>
+        <div class="li-title">${d.name} ${licWarn?'<span class="badge badge-r">رخصة قاربت الانتهاء</span>':''}</div>
+        <div class="li-meta">${d.phone?'هاتف: '+d.phone+' · ':''}${d.licenseType||''} ${d.licenseExpiry? '· تنتهي: '+fmtDate(d.licenseExpiry):''}</div>
+        <div class="li-meta">طريقة الأجر: ${d.payType==='monthly'?'شهري ثابت ('+fmt(d.baseSalary||0)+')':d.payType==='percent'?'نسبة من صافي الربح ('+(d.commissionPercent||0)+'%)':'بالرحلة'}</div>
+        <div class="li-meta">الرصيد المفتوح من العهدة: <b class="mono">${fmt(openBal)}</b></div>
+      </div>
+      <div class="li-actions">
+        <button class="btn btn-icon" onclick="openAdvanceModal(null,'${d.id}')" title="إضافة سلفة">₪</button>
+        <button class="btn btn-icon" onclick="openDriverModal('${d.id}')" title="تعديل">✎</button>
+        <button class="btn btn-icon" onclick="deleteDriver('${d.id}')" title="حذف">✕</button>
+      </div>
+    </div>
+    ${advs.length? `<div class="table-wrap" style="margin-top:10px"><table><tr><th>النوع</th><th>المبلغ</th><th>المسدد</th><th>التاريخ</th><th>الحالة</th><th></th></tr>
+      ${advs.map(a=>`<tr><td>${ADV_TYPES[a.type]}</td><td class="mono">${fmt(a.amount)}</td><td class="mono">${fmt(a.settledAmount||0)}</td><td>${fmtDate(a.date)}</td>
+      <td><span class="badge ${a.status==='open'?'badge-y':'badge-g'}">${a.status==='open'?'مفتوحة':'مسدّدة'}</span></td>
+      <td>${a.status==='open'?`<button class="btn btn-sm" onclick="settleAdvance('${a.id}')">تسوية</button>`:''}</td></tr>`).join('')}
+    </table></div>` : ''}
+  </div>`;
+}
+function openDriverModal(id){
+  const d=id? state.drivers.find(x=>x.id===id):null;
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><h3>${d?'تعديل سائق':'سائق جديد'}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-grid">
+      <div class="field full"><label>الاسم الكامل</label><input type="text" id="df_name" value="${d?esc(d.name):''}"></div>
+      <div class="field"><label>الهاتف</label><input type="tel" id="df_phone" value="${d?esc(d.phone):''}"></div>
+      <div class="field"><label>نوع الرخصة</label><input type="text" id="df_lictype" value="${d?esc(d.licenseType):''}"></div>
+      <div class="field"><label>تاريخ انتهاء الرخصة</label><input type="date" id="df_licexp" value="${d?d.licenseExpiry||'':''}"></div>
+      <div class="field"><label>طريقة الأجر</label><select id="df_paytype" onchange="togglePayFields()">
+        <option value="monthly" ${d&&d.payType==='monthly'?'selected':''}>شهري ثابت</option>
+        <option value="pertrip" ${d&&d.payType==='pertrip'?'selected':''}>بالرحلة</option>
+        <option value="percent" ${d&&d.payType==='percent'?'selected':''}>نسبة من صافي الربح</option>
+      </select></div>
+      <div class="field" id="df_wrap_salary"><label>الراتب الأساسي الشهري</label><input type="number" id="df_basesalary" value="${d?d.baseSalary||'':''}"></div>
+      <div class="field" id="df_wrap_pct"><label>نسبة السائق من صافي ربح الرحلة (%)</label><input type="number" id="df_commission" value="${d?d.commissionPercent||'':''}" placeholder="مثال: 33"></div>
+      <div class="field full"><label>ملاحظات</label><textarea id="df_notes">${d?d.notes||'':''}</textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button><button class="btn btn-y" onclick="saveDriver(${d?`'${d.id}'`:'null'})">حفظ</button></div>
+  </div></div>`;
+  togglePayFields();
+}
+function togglePayFields(){
+  const pt = document.getElementById('df_paytype').value;
+  document.getElementById('df_wrap_salary').style.display = (pt==='monthly') ? '' : 'none';
+  document.getElementById('df_wrap_pct').style.display = (pt==='percent') ? '' : 'none';
+}
+async function saveDriver(id){
+  const name=document.getElementById('df_name').value.trim();
+  if(!name){ showToast('أدخل اسم السائق', true); return; }
+  const data={name, phone:document.getElementById('df_phone').value.trim(), licenseType:document.getElementById('df_lictype').value.trim(),
+    licenseExpiry:document.getElementById('df_licexp').value, payType:document.getElementById('df_paytype').value,
+    baseSalary:Number(document.getElementById('df_basesalary').value)||0, commissionPercent:Number(document.getElementById('df_commission').value)||0,
+    notes:document.getElementById('df_notes').value.trim()};
+  if(id) Object.assign(state.drivers.find(x=>x.id===id), data);
+  else state.drivers.push(Object.assign({id:uid(), status:'active'}, data));
+  await persist.drivers(); closeModal(); showToast('تم الحفظ'); renderDrivers();
+}
+async function deleteDriver(id){
+  if(!confirm('حذف هذا السائق؟')) return;
+  state.drivers=state.drivers.filter(x=>x.id!==id); await persist.drivers(); showToast('تم الحذف'); renderDrivers();
+}
+
+function openAdvanceModal(advId, driverId){
+  const drvOpt = state.drivers.map(d=>`<option value="${d.id}" ${driverId===d.id?'selected':''}>${d.name}</option>`).join('');
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><h3>سلفة / عهدة جديدة</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="field"><label>السائق</label><select id="af_driver">${drvOpt}</select></div>
+    <div class="field"><label>النوع</label><select id="af_type">${Object.entries(ADV_TYPES).map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select></div>
+    <div class="field"><label>المبلغ</label><input type="number" id="af_amount"></div>
+    <div class="field"><label>التاريخ</label><input type="date" id="af_date" value="${todayStr()}"></div>
+    <div class="field"><label>ملاحظة</label><input type="text" id="af_note"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button><button class="btn btn-y" onclick="saveAdvance()">حفظ</button></div>
+  </div></div>`;
+}
+async function saveAdvance(){
+  const amount=Number(document.getElementById('af_amount').value)||0;
+  if(amount<=0){ showToast('أدخل مبلغاً صحيحاً', true); return; }
+  const driverId=document.getElementById('af_driver').value;
+  state.advances.push({id:uid(), driverId, type:document.getElementById('af_type').value, amount,
+    date:document.getElementById('af_date').value||todayStr(), note:document.getElementById('af_note').value.trim(), status:'open', settledAmount:0});
+  pushCash({type:'out', category:'advance', amount, relatedType:'driver', relatedId:driverId, note:'سلفة: '+driverName(driverId)});
+  await persist.advances(); await persist.cashEntries(); closeModal(); showToast('تم تسجيل السلفة'); renderDrivers();
+}
+async function settleAdvance(id){
+  const a = state.advances.find(x=>x.id===id);
+  const amt = prompt('المبلغ الذي تمت تسويته:', a.amount);
+  if(amt===null) return;
+  a.settledAmount = Number(amt)||0;
+  a.status = a.settledAmount >= a.amount ? 'settled' : 'open';
+  await persist.advances(); showToast('تم تحديث التسوية'); renderDrivers();
+}
+
+/* ===================== Vehicles ===================== */
+function renderVehicles(){
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head"><div><div class="page-title disp">الآليات</div><div class="page-sub">حفارات آبار المياه، شاحنات نقل البضائع، شاحنات نقل الآليات الثقيلة</div></div>
+  <button class="btn btn-y" onclick="openVehicleModal()">+ آلية جديدة</button></div>
+  ${state.vehicles.length? `<div class="list">${state.vehicles.map(vehicleCardHTML).join('')}</div>` : `<div class="card"><div class="empty-state"><p>لا توجد آليات بعد.</p><button class="btn btn-y" onclick="openVehicleModal()">إضافة أول آلية</button></div></div>`}
+  `;
+}
+function vehicleCardHTML(v){
+  const vTrips = state.trips.filter(t=>t.vehicleId===v.id);
+  const rev = vTrips.reduce((s,t)=>s+(Number(t.revenue)||0),0);
+  const exp = vTrips.reduce((s,t)=>s+tripExpTotal(t),0);
+  const maint = state.maintenanceEntries.filter(m=>m.vehicleId===v.id).reduce((s,m)=>s+(Number(m.cost)||0),0);
+  const net = rev-exp-maint;
+  const insWarn = v.insuranceExpiry && daysBetween(todayStr(), v.insuranceExpiry)<=30;
+  return `
+  <div class="list-item">
+    <div class="li-top">
+      <div>
+        <div class="li-title">${v.internalNo||v.plate} <span class="badge badge-o">${{well:'حفارة آبار مياه', cargo:'شاحنة نقل بضائع', heavy:'شاحنة نقل آليات ثقيلة'}[v.type]}</span> ${insWarn?'<span class="badge badge-r">تأمين ينتهي قريباً</span>':''}</div>
+        <div class="li-meta">${v.plate?'اللوحة: '+v.plate+' · ':''}الحالة: ${{active:'نشطة', maint:'صيانة', stopped:'متوقفة'}[v.status]||v.status} · السائق الحالي: ${v.currentDriverId?driverName(v.currentDriverId):'غير معيّن'}</div>
+        <div class="li-meta">عدد الرحلات: ${vTrips.length} · صافي ربح الآلية: <b class="mono">${fmt(net)}</b></div>
+      </div>
+      <div class="li-actions">
+        <button class="btn btn-icon" onclick="openVehicleModal('${v.id}')" title="تعديل">✎</button>
+        <button class="btn btn-icon" onclick="deleteVehicle('${v.id}')" title="حذف">✕</button>
+      </div>
+    </div>
+  </div>`;
+}
+function openVehicleModal(id){
+  const v=id? state.vehicles.find(x=>x.id===id):null;
+  const drvOpt = state.drivers.map(d=>`<option value="${d.id}" ${v&&v.currentDriverId===d.id?'selected':''}>${d.name}</option>`).join('');
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><h3>${v?'تعديل آلية':'آلية جديدة'}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-grid">
+      <div class="field full"><label>الرقم الداخلي / الاسم</label><input type="text" id="vf_no" placeholder="مثال: حفارة 1" value="${v?esc(v.internalNo):''}"></div>
+      <div class="field"><label>النوع</label><select id="vf_type">
+        <option value="well" ${v&&v.type==='well'?'selected':''}>حفارة آبار مياه</option>
+        <option value="cargo" ${v&&v.type==='cargo'?'selected':''}>شاحنة نقل بضائع</option>
+        <option value="heavy" ${v&&v.type==='heavy'?'selected':''}>شاحنة نقل آليات ثقيلة</option>
+      </select></div>
+      <div class="field"><label>رقم اللوحة</label><input type="text" id="vf_plate" value="${v?esc(v.plate):''}"></div>
+      <div class="field"><label>الحالة</label><select id="vf_status">
+        <option value="active" ${!v||v.status==='active'?'selected':''}>نشطة</option>
+        <option value="maint" ${v&&v.status==='maint'?'selected':''}>صيانة</option>
+        <option value="stopped" ${v&&v.status==='stopped'?'selected':''}>متوقفة</option>
+      </select></div>
+      <div class="field"><label>السائق الحالي</label><select id="vf_driver"><option value="">—</option>${drvOpt}</select></div>
+      <div class="field"><label>تاريخ انتهاء التأمين</label><input type="date" id="vf_ins" value="${v?v.insuranceExpiry||'':''}"></div>
+      <div class="field"><label>تاريخ انتهاء الترخيص</label><input type="date" id="vf_lic" value="${v?v.licenseExpiry||'':''}"></div>
+      <div class="field"><label>سنة الصنع</label><input type="text" id="vf_year" value="${v?esc(v.year):''}"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button><button class="btn btn-y" onclick="saveVehicle(${v?`'${v.id}'`:'null'})">حفظ</button></div>
+  </div></div>`;
+}
+async function saveVehicle(id){
+  const no=document.getElementById('vf_no').value.trim();
+  if(!no){ showToast('أدخل اسم/رقم الآلية', true); return; }
+  const data={internalNo:no, type:document.getElementById('vf_type').value, plate:document.getElementById('vf_plate').value.trim(),
+    status:document.getElementById('vf_status').value, currentDriverId:document.getElementById('vf_driver').value,
+    insuranceExpiry:document.getElementById('vf_ins').value, licenseExpiry:document.getElementById('vf_lic').value, year:document.getElementById('vf_year').value.trim()};
+  if(id) Object.assign(state.vehicles.find(x=>x.id===id), data);
+  else state.vehicles.push(Object.assign({id:uid()}, data));
+  await persist.vehicles(); closeModal(); showToast('تم الحفظ'); renderVehicles();
+}
+async function deleteVehicle(id){
+  if(!confirm('حذف هذه الآلية؟')) return;
+  state.vehicles=state.vehicles.filter(x=>x.id!==id); await persist.vehicles(); showToast('تم الحذف'); renderVehicles();
+}
+
+/* ===================== Fleet ops: Maintenance + Fuel ===================== */
+function renderFleetOps(){
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head"><div><div class="page-title disp">الصيانة والوقود</div><div class="page-sub">سجل الصيانة الدورية/الطارئة وسجل تعبئة الوقود التفصيلي لأغراض التحليل</div></div></div>
+  <div class="tabs">
+    <button class="${state.fleetTab==='maint'?'active':''}" onclick="setFleetTab('maint')">الصيانة</button>
+    <button class="${state.fleetTab==='fuel'?'active':''}" onclick="setFleetTab('fuel')">الوقود</button>
+  </div>
+  <div id="fleetTabContent"></div>
+  `;
+  renderFleetTabContent();
+}
+function setFleetTab(t){ state.fleetTab=t; renderFleetOps(); }
+function renderFleetTabContent(){
+  const wrap = document.getElementById('fleetTabContent');
+  if(state.fleetTab==='maint'){
+    wrap.innerHTML = `
+    <div class="page-head"><div></div><button class="btn btn-y btn-sm" onclick="openMaintModal()">+ أمر صيانة</button></div>
+    ${state.maintenanceEntries.length? `<div class="list">${[...state.maintenanceEntries].sort((a,b)=>b.date<a.date?1:-1).map(m=>`
+      <div class="list-item"><div class="li-top">
+        <div><div class="li-title">${vehicleName(m.vehicleId)} — ${MAINT_TYPES[m.type]}</div>
+        <div class="li-meta">${fmtDate(m.date)} · ${esc(m.description)} ${m.workshop?'· الورشة: '+esc(m.workshop):''}</div>
+        <div class="li-meta">التكلفة: <b class="mono">${fmt(m.cost)}</b></div></div>
+        <div class="li-actions"><button class="btn btn-icon" onclick="deleteMaint('${m.id}')">✕</button></div>
+      </div></div>`).join('')}</div>` : `<div class="card"><div class="empty-state"><p>لا توجد أوامر صيانة مسجّلة.</p></div></div>`}
+    `;
+  }else{
+    // fuel consumption calc per vehicle
+    const byVeh = {};
+    state.fuelEntries.forEach(f=>{ (byVeh[f.vehicleId]=byVeh[f.vehicleId]||[]).push(f); });
+    Object.values(byVeh).forEach(arr=>arr.sort((a,b)=> (a.odometer||0)-(b.odometer||0)));
+    wrap.innerHTML = `
+    <div class="page-head"><div></div><button class="btn btn-y btn-sm" onclick="openFuelModal()">+ تعبئة وقود</button></div>
+    ${state.fuelEntries.length? `<div class="table-wrap"><table><tr><th>التاريخ</th><th>الآلية</th><th>السائق</th><th>اللترات</th><th>سعر اللتر</th><th>الإجمالي</th><th>العداد</th><th>الاستهلاك (ل/100كم)</th><th></th></tr>
+      ${[...state.fuelEntries].sort((a,b)=>b.date<a.date?1:-1).map(f=>{
+        const arr = byVeh[f.vehicleId]||[];
+        const idx = arr.findIndex(x=>x.id===f.id);
+        let consumption='—';
+        if(idx>0){ const prev=arr[idx-1]; const dist=(f.odometer||0)-(prev.odometer||0); if(dist>0) consumption=((f.liters/dist)*100).toFixed(1); }
+        return `<tr><td>${fmtDate(f.date)}</td><td>${vehicleName(f.vehicleId)}</td><td>${driverName(f.driverId)}</td><td class="mono">${f.liters}</td><td class="mono">${fmt(f.pricePerLiter)}</td><td class="mono">${fmt(f.liters*f.pricePerLiter)}</td><td class="mono">${f.odometer||'—'}</td><td class="mono">${consumption}</td>
+        <td><button class="btn btn-icon btn-sm" onclick="deleteFuel('${f.id}')">✕</button></td></tr>`;
+      }).join('')}
+    </table></div>` : `<div class="card"><div class="empty-state"><p>لا توجد تعبئات وقود مسجّلة.</p></div></div>`}
+    `;
+  }
+}
+function openMaintModal(){
+  const vehOpt = state.vehicles.map(v=>`<option value="${v.id}">${v.internalNo||v.plate}</option>`).join('');
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><h3>أمر صيانة جديد</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>الآلية</label><select id="mf_vehicle">${vehOpt}</select></div>
+      <div class="field"><label>النوع</label><select id="mf_type">${Object.entries(MAINT_TYPES).map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select></div>
+      <div class="field"><label>التاريخ</label><input type="date" id="mf_date" value="${todayStr()}"></div>
+      <div class="field"><label>التكلفة</label><input type="number" id="mf_cost"></div>
+      <div class="field"><label>الورشة</label><input type="text" id="mf_workshop"></div>
+      <div class="field full"><label>وصف العطل/العمل</label><textarea id="mf_desc"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button><button class="btn btn-y" onclick="saveMaint()">حفظ</button></div>
+  </div></div>`;
+}
+async function saveMaint(){
+  const vehicleId=document.getElementById('mf_vehicle').value;
+  const cost=Number(document.getElementById('mf_cost').value)||0;
+  if(!vehicleId){ showToast('اختر الآلية', true); return; }
+  state.maintenanceEntries.push({id:uid(), vehicleId, type:document.getElementById('mf_type').value, date:document.getElementById('mf_date').value||todayStr(),
+    cost, workshop:document.getElementById('mf_workshop').value.trim(), description:document.getElementById('mf_desc').value.trim(), status:'closed'});
+  if(cost>0) pushCash({type:'out', category:'maintenance', amount:cost, relatedType:'vehicle', relatedId:vehicleId, note:'صيانة: '+vehicleName(vehicleId)});
+  await persist.maintenanceEntries(); await persist.cashEntries(); closeModal(); showToast('تم حفظ أمر الصيانة'); renderFleetOps();
+}
+async function deleteMaint(id){
+  if(!confirm('حذف أمر الصيانة؟')) return;
+  state.maintenanceEntries=state.maintenanceEntries.filter(x=>x.id!==id); await persist.maintenanceEntries(); showToast('تم الحذف'); renderFleetOps();
+}
+function openFuelModal(){
+  const vehOpt = state.vehicles.map(v=>`<option value="${v.id}">${v.internalNo||v.plate}</option>`).join('');
+  const drvOpt = state.drivers.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><h3>تعبئة وقود جديدة</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>الآلية</label><select id="ff_vehicle">${vehOpt}</select></div>
+      <div class="field"><label>السائق</label><select id="ff_driver"><option value="">—</option>${drvOpt}</select></div>
+      <div class="field"><label>التاريخ</label><input type="date" id="ff_date" value="${todayStr()}"></div>
+      <div class="field"><label>عدد اللترات</label><input type="number" id="ff_liters"></div>
+      <div class="field"><label>سعر اللتر</label><input type="number" id="ff_price"></div>
+      <div class="field"><label>قراءة العداد</label><input type="number" id="ff_odo"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button><button class="btn btn-y" onclick="saveFuel()">حفظ</button></div>
+  </div></div>`;
+}
+async function saveFuel(){
+  const vehicleId=document.getElementById('ff_vehicle').value;
+  const liters=Number(document.getElementById('ff_liters').value)||0;
+  const odo=Number(document.getElementById('ff_odo').value)||0;
+  if(!vehicleId || liters<=0){ showToast('تحقق من بيانات التعبئة', true); return; }
+  const lastForVeh = state.fuelEntries.filter(f=>f.vehicleId===vehicleId).sort((a,b)=>(b.odometer||0)-(a.odometer||0))[0];
+  if(lastForVeh && odo>0 && odo < lastForVeh.odometer){
+    if(!confirm('قراءة العداد أقل من آخر قراءة مسجّلة لهذه الآلية. هل تريد المتابعة؟')) return;
+  }
+  state.fuelEntries.push({id:uid(), vehicleId, driverId:document.getElementById('ff_driver').value, date:document.getElementById('ff_date').value||todayStr(),
+    liters, pricePerLiter:Number(document.getElementById('ff_price').value)||0, odometer:odo});
+  await persist.fuelEntries(); closeModal(); showToast('تم تسجيل التعبئة'); renderFleetOps();
+}
+async function deleteFuel(id){
+  if(!confirm('حذف تعبئة الوقود؟')) return;
+  state.fuelEntries=state.fuelEntries.filter(x=>x.id!==id); await persist.fuelEntries(); showToast('تم الحذف'); renderFleetOps();
+}
+
+/* ===================== Invoices ===================== */
+function renderInvoices(){
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head"><div><div class="page-title disp">الفواتير والتحصيل</div><div class="page-sub">إصدار الفواتير من الرحلات المكتملة ومتابعة التحصيل</div></div>
+  <button class="btn btn-y" onclick="openInvoiceModal()">+ فاتورة جديدة</button></div>
+  ${state.invoices.length? `<div class="list">${[...state.invoices].sort((a,b)=>b.date<a.date?1:-1).map(invoiceItemHTML).join('')}</div>` : `<div class="card"><div class="empty-state"><p>لا توجد فواتير بعد.</p></div></div>`}
+  `;
+}
+function invoiceItemHTML(i){
+  const paid=(i.payments||[]).reduce((s,p)=>s+Number(p.amount),0);
+  const remaining = Number(i.amount)-paid;
+  const overdue = i.dueDate && i.dueDate<todayStr() && remaining>0.01;
+  return `
+  <div class="list-item">
+    <div class="li-top">
+      <div><div class="li-title mono">${i.invoiceNo} <span class="badge ${i.status==='paid'?'badge-g':overdue?'badge-r':'badge-y'}">${{draft:'مسودة',approved:'معتمدة',paid:'مدفوعة',partial:'مدفوعة جزئياً',cancelled:'ملغاة'}[i.status]}</span></div>
+      <div class="li-meta">${customerName(i.customerId)} · تاريخ: ${fmtDate(i.date)} · استحقاق: ${fmtDate(i.dueDate)} · عدد الرحلات: ${(i.tripIds||[]).length}</div>
+      <div class="li-meta">المبلغ: <b class="mono">${fmt(i.amount)}</b> · المحصّل: <b class="mono">${fmt(paid)}</b> · المتبقي: <b class="mono">${fmt(remaining)}</b></div></div>
+      <div class="li-actions">
+        ${remaining>0.01?`<button class="btn btn-icon" onclick="openPaymentModal('${i.id}')" title="تسجيل دفعة">₪</button>`:''}
+        <button class="btn btn-icon" onclick="deleteInvoice('${i.id}')" title="حذف">✕</button>
+      </div>
+    </div>
+  </div>`;
+}
+function openInvoiceModal(){
+  const custOpt = state.customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><h3>فاتورة جديدة</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="field"><label>العميل</label><select id="if_customer" onchange="renderInvoiceTrips()"><option value="">اختر عميلاً</option>${custOpt}</select></div>
+    <div id="if_trips" style="margin-bottom:12px"></div>
+    <div class="form-grid">
+      <div class="field"><label>تاريخ الفاتورة</label><input type="date" id="if_date" value="${todayStr()}"></div>
+      <div class="field"><label>تاريخ الاستحقاق</label><input type="date" id="if_due" value="${todayStr()}"></div>
+    </div>
+    <div id="if_total" class="mono" style="font-weight:800;font-size:16px;margin:10px 0">الإجمالي: 0</div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button><button class="btn btn-y" onclick="saveInvoice()">إصدار الفاتورة</button></div>
+  </div></div>`;
+}
+function renderInvoiceTrips(){
+  const custId = document.getElementById('if_customer').value;
+  const eligible = state.trips.filter(t=>t.customerId===custId && (t.status==='completed'));
+  document.getElementById('if_trips').innerHTML = eligible.length? `<div class="table-wrap"><table><tr><th></th><th>الرحلة</th><th>التاريخ</th><th>الإيراد</th></tr>
+    ${eligible.map(t=>`<tr><td><input type="checkbox" class="if_trip_cb" value="${t.id}" data-amount="${t.revenue}" onchange="updateInvoiceTotal()"></td><td class="mono">${t.tripNo}</td><td>${fmtDate(t.date)}</td><td class="mono">${fmt(t.revenue)}</td></tr>`).join('')}
+  </table></div>` : '<div style="font-size:12.5px;color:var(--muted);font-weight:700">لا توجد رحلات مكتملة غير مفوترة لهذا العميل.</div>';
+  updateInvoiceTotal();
+}
+function updateInvoiceTotal(){
+  const total = Array.from(document.querySelectorAll('.if_trip_cb:checked')).reduce((s,cb)=>s+Number(cb.dataset.amount),0);
+  document.getElementById('if_total').textContent = 'الإجمالي: '+fmt(total);
+}
+async function saveInvoice(){
+  const customerId = document.getElementById('if_customer').value;
+  const tripIds = Array.from(document.querySelectorAll('.if_trip_cb:checked')).map(cb=>cb.value);
+  if(!customerId || !tripIds.length){ showToast('اختر العميل ورحلة واحدة على الأقل', true); return; }
+  const amount = tripIds.reduce((s,id)=> s+Number(state.trips.find(t=>t.id===id).revenue), 0);
+  const invoiceNo = 'INV-'+new Date().getFullYear()+'-'+String(state.invoices.length+1).padStart(4,'0');
+  state.invoices.push({id:uid(), invoiceNo, customerId, tripIds, date:document.getElementById('if_date').value||todayStr(),
+    dueDate:document.getElementById('if_due').value||todayStr(), amount, status:'approved', payments:[]});
+  tripIds.forEach(id=>{ const t=state.trips.find(x=>x.id===id); t.status='invoiced'; });
+  await persist.invoices(); await persist.trips(); closeModal(); showToast('تم إصدار الفاتورة'); renderInvoices();
+}
+function openPaymentModal(invId){
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><h3>تسجيل دفعة</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="field"><label>المبلغ</label><input type="number" id="pf_amount"></div>
+    <div class="field"><label>التاريخ</label><input type="date" id="pf_date" value="${todayStr()}"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button><button class="btn btn-y" onclick="savePayment('${invId}')">حفظ</button></div>
+  </div></div>`;
+}
+async function savePayment(invId){
+  const amount=Number(document.getElementById('pf_amount').value)||0;
+  if(amount<=0){ showToast('أدخل مبلغاً صحيحاً', true); return; }
+  const inv = state.invoices.find(x=>x.id===invId);
+  inv.payments = inv.payments||[];
+  inv.payments.push({id:uid(), amount, date:document.getElementById('pf_date').value||todayStr()});
+  const totalPaid = inv.payments.reduce((s,p)=>s+Number(p.amount),0);
+  inv.status = totalPaid >= Number(inv.amount) ? 'paid' : 'partial';
+  if(inv.status==='paid') (inv.tripIds||[]).forEach(id=>{ const t=state.trips.find(x=>x.id===id); if(t) t.status='closed'; });
+  pushCash({type:'in', category:'invoice_payment', amount, relatedType:'invoice', relatedId:invId, note:'تحصيل فاتورة: '+inv.invoiceNo});
+  await persist.invoices(); await persist.trips(); await persist.cashEntries(); closeModal(); showToast('تم تسجيل الدفعة'); renderInvoices();
+}
+async function deleteInvoice(id){
+  if(!confirm('حذف هذه الفاتورة؟')) return;
+  const inv = state.invoices.find(x=>x.id===id);
+  (inv.tripIds||[]).forEach(tid=>{ const t=state.trips.find(x=>x.id===tid); if(t && t.status==='invoiced') t.status='completed'; });
+  state.invoices=state.invoices.filter(x=>x.id!==id); await persist.invoices(); await persist.trips(); showToast('تم الحذف'); renderInvoices();
+}
+
+/* ===================== Cash ledger ===================== */
+function renderCash(){
+  const entries=[...state.cashEntries].sort((a,b)=>b.date<a.date?1:-1);
+  let running = Number(state.account.openingCashBalance)||0;
+  const rows = [...state.cashEntries].sort((a,b)=>a.date<b.date?-1:1).map(c=>{ running += (c.type==='in'?Number(c.amount):-Number(c.amount)); return {...c, running}; });
+  rows.reverse();
+  const balance = rows.length? rows[0].running : (Number(state.account.openingCashBalance)||0);
+  const CAT = {advance:'سلفة سائق', maintenance:'صيانة', invoice_payment:'تحصيل فاتورة', manual_in:'إيراد يدوي', manual_out:'مصروف يدوي', salary_payment:'صرف راتب'};
+
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head"><div><div class="page-title disp">الحركة المالية</div><div class="page-sub">سجل مبسّط للصندوق يتولّد تلقائياً من التحصيل والسلف والصيانة، مع إمكانية إضافة حركات يدوية</div></div>
+  <button class="btn btn-y" onclick="openCashModal()">+ حركة يدوية</button></div>
+  <div class="metric" style="max-width:260px;margin-bottom:16px"><div class="metric-l">الرصيد الحالي التقديري</div><div class="metric-v mono ${balance<0?'neg':'pos'}">${fmt(balance)}</div></div>
+  ${rows.length? `<div class="table-wrap"><table><tr><th>التاريخ</th><th>النوع</th><th>البند</th><th>ملاحظة</th><th>المبلغ</th><th>الرصيد</th></tr>
+    ${rows.map(c=>`<tr class="${c.type==='out'?'neg':''}"><td>${fmtDate(c.date)}</td><td>${c.type==='in'?'قبض':'صرف'}</td><td>${CAT[c.category]||c.category}</td><td>${esc(c.note)}</td><td class="mono">${c.type==='in'?'+':'-'}${fmt(c.amount)}</td><td class="mono">${fmt(c.running)}</td></tr>`).join('')}
+  </table></div>` : `<div class="card"><div class="empty-state"><p>لا توجد حركات مسجّلة بعد.</p></div></div>`}
+  `;
+}
+function openCashModal(){
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><h3>حركة مالية يدوية</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="field"><label>النوع</label><select id="cf_type"><option value="in">قبض (إيراد)</option><option value="out">صرف (مصروف)</option></select></div>
+    <div class="field"><label>المبلغ</label><input type="number" id="cf_amount"></div>
+    <div class="field"><label>التاريخ</label><input type="date" id="cf_date" value="${todayStr()}"></div>
+    <div class="field"><label>ملاحظة</label><input type="text" id="cf_note" placeholder="مثال: إيجار مكتب، راتب إداري..."></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button><button class="btn btn-y" onclick="saveCashEntry()">حفظ</button></div>
+  </div></div>`;
+}
+async function saveCashEntry(){
+  const amount=Number(document.getElementById('cf_amount').value)||0;
+  if(amount<=0){ showToast('أدخل مبلغاً صحيحاً', true); return; }
+  const type=document.getElementById('cf_type').value;
+  pushCash({type, category: type==='in'?'manual_in':'manual_out', amount, note:document.getElementById('cf_note').value.trim(), date:document.getElementById('cf_date').value||todayStr()});
+  await persist.cashEntries(); closeModal(); showToast('تم الحفظ'); renderCash();
+}
+
+/* ===================== Payroll (مسير الرواتب) ===================== */
+function currentMonthStr(){ return todayStr().slice(0,7); }
+function computePayrollSuggestion(driverId, period){
+  const d = state.drivers.find(x=>x.id===driverId);
+  const trips = state.trips.filter(t=>t.driverId===driverId && t.date && t.date.slice(0,7)===period && ['completed','invoiced','closed'].includes(t.status));
+  const tripCommission = trips.reduce((s,t)=> s + (tripDriverCommission(t)||0), 0);
+  const salaryAdvance = state.advances.filter(a=>a.driverId===driverId && a.type==='salary' && a.status==='open').reduce((s,a)=>s+(Number(a.amount)-Number(a.settledAmount||0)),0);
+  return {baseSalary: d? (Number(d.baseSalary)||0):0, tripCommission, salaryAdvance, tripCount: trips.length};
+}
+function renderPayroll(){
+  const runs = [...state.payrollRuns].sort((a,b)=>b.createdAt-a.createdAt);
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head">
+    <div><div class="page-title disp">الرواتب</div><div class="page-sub">مسير راتب شهري لكل سائق: الأساسي + البدلات + عمولات الرحلات − السلف − المخالفات</div></div>
+    <button class="btn btn-y" onclick="openPayrollModal()">+ مسير راتب جديد</button>
+  </div>
+  ${runs.length? `<div class="list">${runs.map(payrollRunItemHTML).join('')}</div>` : `<div class="card"><div class="empty-state"><p>لا توجد مسيرات رواتب محفوظة بعد.</p><button class="btn btn-y" onclick="openPayrollModal()">إنشاء أول مسير راتب</button></div></div>`}
+  `;
+}
+function payrollRunItemHTML(r){
+  return `
+  <div class="list-item">
+    <div class="li-top">
+      <div><div class="li-title">${driverName(r.driverId)} <span class="badge badge-b">${r.period}</span></div>
+      <div class="li-meta">صافي الراتب: <b class="mono">${fmt(r.netPay)}</b></div></div>
+      <div class="li-actions"><button class="btn btn-icon" onclick="deletePayroll('${r.id}')" title="حذف">✕</button></div>
+    </div>
+    <table style="margin-top:10px">
+      <tr><th>البند</th><th>القيمة</th></tr>
+      <tr><td>الراتب الأساسي</td><td class="mono">${fmt(r.baseSalary)}</td></tr>
+      <tr><td>بدل سفر</td><td class="mono">${fmt(r.travelAllowance)}</td></tr>
+      <tr><td>بدل مبيت</td><td class="mono">${fmt(r.accommodationAllowance)}</td></tr>
+      <tr><td>عمولات رحلات (${r.tripCount||0} رحلة)</td><td class="mono">${fmt(r.tripCommission)}</td></tr>
+      <tr class="total-row"><td>إجمالي الاستحقاقات</td><td class="mono">${fmt(r.totalEarnings)}</td></tr>
+      <tr class="neg"><td>سلفة راتب</td><td class="mono">${fmt(r.salaryAdvance)}</td></tr>
+      <tr class="neg"><td>مخالفات</td><td class="mono">${fmt(r.violations)}</td></tr>
+      <tr class="total-row"><td>إجمالي الخصومات</td><td class="mono">${fmt(r.totalDeductions)}</td></tr>
+      <tr class="total-row"><td>صافي الراتب</td><td class="mono">${fmt(r.netPay)}</td></tr>
+    </table>
+  </div>`;
+}
+function openPayrollModal(){
+  const drvOpt = state.drivers.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+  document.getElementById('modalRoot').innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">
+    <div class="modal-head"><h3>مسير راتب جديد</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>السائق</label><select id="pf_driver" onchange="recalcPayroll()">${drvOpt}</select></div>
+      <div class="field"><label>الشهر</label><input type="month" id="pf_period" value="${currentMonthStr()}" onchange="recalcPayroll()"></div>
+    </div>
+    <div class="form-grid">
+      <div class="field"><label>الراتب الأساسي</label><input type="number" id="pf_base" oninput="updatePayrollPreview()"></div>
+      <div class="field"><label>بدل سفر</label><input type="number" id="pf_travel" value="0" oninput="updatePayrollPreview()"></div>
+      <div class="field"><label>بدل مبيت</label><input type="number" id="pf_accom" value="0" oninput="updatePayrollPreview()"></div>
+      <div class="field"><label>عمولات رحلات (تلقائي — قابل للتعديل)</label><input type="number" id="pf_commission" oninput="updatePayrollPreview()"></div>
+      <div class="field"><label>سلفة راتب (تلقائي — قابل للتعديل)</label><input type="number" id="pf_advance" oninput="updatePayrollPreview()"></div>
+      <div class="field"><label>مخالفات</label><input type="number" id="pf_violations" value="0" oninput="updatePayrollPreview()"></div>
+    </div>
+    <div id="pf_preview"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button><button class="btn btn-y" onclick="savePayroll()">حفظ مسير الراتب</button></div>
+  </div></div>`;
+  recalcPayroll();
+}
+function recalcPayroll(){
+  const driverId = document.getElementById('pf_driver').value;
+  const period = document.getElementById('pf_period').value || currentMonthStr();
+  const s = computePayrollSuggestion(driverId, period);
+  document.getElementById('pf_base').value = s.baseSalary;
+  document.getElementById('pf_commission').value = Math.round(s.tripCommission);
+  document.getElementById('pf_advance').value = Math.round(s.salaryAdvance);
+  window._pfTripCount = s.tripCount;
+  updatePayrollPreview();
+}
+function updatePayrollPreview(){
+  const base=Number(document.getElementById('pf_base').value)||0;
+  const travel=Number(document.getElementById('pf_travel').value)||0;
+  const accom=Number(document.getElementById('pf_accom').value)||0;
+  const commission=Number(document.getElementById('pf_commission').value)||0;
+  const advance=Number(document.getElementById('pf_advance').value)||0;
+  const violations=Number(document.getElementById('pf_violations').value)||0;
+  const earnings = base+travel+accom+commission;
+  const deductions = advance+violations;
+  const net = earnings-deductions;
+  document.getElementById('pf_preview').innerHTML = `
+    <table><tr><th>إجمالي الاستحقاقات</th><th>إجمالي الخصومات</th><th>صافي الراتب</th></tr>
+    <tr class="${net<0?'neg':''}"><td class="mono">${fmt(earnings)}</td><td class="mono">${fmt(deductions)}</td><td class="mono">${fmt(net)}</td></tr></table>`;
+}
+async function savePayroll(){
+  const driverId=document.getElementById('pf_driver').value;
+  if(!driverId){ showToast('اختر سائقاً', true); return; }
+  const period=document.getElementById('pf_period').value || currentMonthStr();
+  const base=Number(document.getElementById('pf_base').value)||0;
+  const travel=Number(document.getElementById('pf_travel').value)||0;
+  const accom=Number(document.getElementById('pf_accom').value)||0;
+  const commission=Number(document.getElementById('pf_commission').value)||0;
+  const advance=Number(document.getElementById('pf_advance').value)||0;
+  const violations=Number(document.getElementById('pf_violations').value)||0;
+  const earnings=base+travel+accom+commission;
+  const deductions=advance+violations;
+  const net=earnings-deductions;
+  state.payrollRuns.push({id:uid(), driverId, period, baseSalary:base, travelAllowance:travel, accommodationAllowance:accom,
+    tripCommission:commission, tripCount:window._pfTripCount||0, salaryAdvance:advance, violations, totalEarnings:earnings, totalDeductions:deductions, netPay:net, createdAt:Date.now()});
+  if(net>0) pushCash({type:'out', category:'salary_payment', amount:net, relatedType:'driver', relatedId:driverId, note:'راتب '+driverName(driverId)+' — '+period});
+  await persist.payrollRuns(); await persist.cashEntries(); closeModal(); showToast('تم حفظ مسير الراتب'); renderPayroll();
+}
+async function deletePayroll(id){
+  if(!confirm('حذف مسير الراتب هذا؟')) return;
+  state.payrollRuns = state.payrollRuns.filter(x=>x.id!==id);
+  await persist.payrollRuns(); showToast('تم الحذف'); renderPayroll();
+}
+
+/* ===================== Reports ===================== */
+function renderReports(){
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head"><div><div class="page-title disp">التقارير</div><div class="page-sub">ربحية الرحلات، الآليات، والعملاء</div></div></div>
+  <div class="card">
+    <div class="filter-bar">
+      <div class="filter-field"><label>من تاريخ</label><input type="date" id="rf_from" onchange="renderReportBody()"></div>
+      <div class="filter-field"><label>إلى تاريخ</label><input type="date" id="rf_to" onchange="renderReportBody()"></div>
+      <div class="filter-field"><label>الآلية</label><select id="rf_vehicle" onchange="renderReportBody()"><option value="">الكل</option>${state.vehicles.map(v=>`<option value="${v.id}">${v.internalNo||v.plate}</option>`).join('')}</select></div>
+      <div class="filter-field"><label>العميل</label><select id="rf_customer" onchange="renderReportBody()"><option value="">الكل</option>${state.customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+    </div>
+  </div>
+  <div id="reportBody"></div>
+  `;
+  renderReportBody();
+}
+function renderReportBody(){
+  const from=document.getElementById('rf_from').value, to=document.getElementById('rf_to').value;
+  const vehicle=document.getElementById('rf_vehicle').value, customer=document.getElementById('rf_customer').value;
+  let trips = state.trips.filter(t=>{
+    if(from && t.date<from) return false; if(to && t.date>to) return false;
+    if(vehicle && t.vehicleId!==vehicle) return false; if(customer && t.customerId!==customer) return false;
+    return true;
+  });
+  const totRev = trips.reduce((s,t)=>s+(Number(t.revenue)||0),0);
+  const totExp = trips.reduce((s,t)=>s+tripExpTotal(t),0);
+  const totNet = totRev-totExp;
+
+  // by vehicle
+  const vehAgg={};
+  trips.forEach(t=>{ if(!t.vehicleId) return; vehAgg[t.vehicleId]=vehAgg[t.vehicleId]||{rev:0,exp:0,count:0}; vehAgg[t.vehicleId].rev+=Number(t.revenue)||0; vehAgg[t.vehicleId].exp+=tripExpTotal(t); vehAgg[t.vehicleId].count++; });
+  const vehRows = Object.entries(vehAgg).map(([id,a])=>({id, name:vehicleName(id), ...a, net:a.rev-a.exp})).sort((a,b)=>b.net-a.net);
+
+  // by customer
+  const custAgg={};
+  trips.forEach(t=>{ if(!t.customerId) return; custAgg[t.customerId]=custAgg[t.customerId]||{rev:0,exp:0,count:0}; custAgg[t.customerId].rev+=Number(t.revenue)||0; custAgg[t.customerId].exp+=tripExpTotal(t); custAgg[t.customerId].count++; });
+  const custRows = Object.entries(custAgg).map(([id,a])=>({id, name:customerName(id), ...a, net:a.rev-a.exp})).sort((a,b)=>b.net-a.net);
+
+  // receivables aging
+  const buckets={cur:0,b30:0,b60:0,b90:0,b90p:0};
+  const agingRows = state.customers.map(c=>{
+    const invs = state.invoices.filter(i=>i.customerId===c.id && i.status!=='paid' && i.status!=='cancelled');
+    let row={cur:0,b30:0,b60:0,b90:0,b90p:0};
+    invs.forEach(i=>{
+      const paid=(i.payments||[]).reduce((s,p)=>s+Number(p.amount),0);
+      const rem = Number(i.amount)-paid; if(rem<=0.01) return;
+      const age = i.dueDate ? daysBetween(i.dueDate, todayStr()) : 0;
+      if(age<=0) row.cur+=rem; else if(age<=30) row.b30+=rem; else if(age<=60) row.b60+=rem; else if(age<=90) row.b90+=rem; else row.b90p+=rem;
+    });
+    Object.keys(buckets).forEach(k=>buckets[k]+=row[k]);
+    return {name:c.name, ...row, total: row.cur+row.b30+row.b60+row.b90+row.b90p};
+  }).filter(r=>r.total>0.01);
+
+  document.getElementById('reportBody').innerHTML = `
+  <div class="grid grid-3" style="margin-bottom:16px">
+    <div class="metric"><div class="metric-l">عدد الرحلات ضمن التصفية</div><div class="metric-v mono">${trips.length}</div></div>
+    <div class="metric"><div class="metric-l">إجمالي الإيراد</div><div class="metric-v mono">${fmt(totRev)}</div></div>
+    <div class="metric"><div class="metric-l">صافي الربح</div><div class="metric-v mono ${totNet<0?'neg':'pos'}">${fmt(totNet)}</div></div>
+  </div>
+
+  <div class="card"><div class="section-title">ربحية الآليات</div>
+    ${vehRows.length? `<div class="table-wrap"><table><tr><th>الآلية</th><th>عدد الرحلات</th><th>الإيراد</th><th>المصاريف</th><th>صافي الربح</th></tr>
+      ${vehRows.map(r=>`<tr class="${r.net<0?'neg':''}"><td>${r.name}</td><td class="mono">${r.count}</td><td class="mono">${fmt(r.rev)}</td><td class="mono">${fmt(r.exp)}</td><td class="mono">${fmt(r.net)}</td></tr>`).join('')}
+    </table></div>` : '<div style="font-size:12.5px;color:var(--muted);font-weight:700">لا بيانات</div>'}
+  </div>
+
+  <div class="card"><div class="section-title">ربحية العملاء</div>
+    ${custRows.length? `<div class="table-wrap"><table><tr><th>العميل</th><th>عدد الرحلات</th><th>الإيراد</th><th>المصاريف</th><th>صافي الربح</th></tr>
+      ${custRows.map(r=>`<tr class="${r.net<0?'neg':''}"><td>${r.name}</td><td class="mono">${r.count}</td><td class="mono">${fmt(r.rev)}</td><td class="mono">${fmt(r.exp)}</td><td class="mono">${fmt(r.net)}</td></tr>`).join('')}
+    </table></div>` : '<div style="font-size:12.5px;color:var(--muted);font-weight:700">لا بيانات</div>'}
+  </div>
+
+  <div class="card"><div class="section-title">أعمار ديون العملاء (ذمم غير محصّلة)</div>
+    ${agingRows.length? `<div class="table-wrap"><table><tr><th>العميل</th><th>غير مستحق</th><th>1-30 يوم</th><th>31-60 يوم</th><th>61-90 يوم</th><th>أكثر من 90</th><th>الإجمالي</th></tr>
+      ${agingRows.map(r=>`<tr><td>${r.name}</td><td class="mono">${fmt(r.cur)}</td><td class="mono">${fmt(r.b30)}</td><td class="mono">${fmt(r.b60)}</td><td class="mono">${fmt(r.b90)}</td><td class="mono">${fmt(r.b90p)}</td><td class="mono">${fmt(r.total)}</td></tr>`).join('')}
+      <tr class="total-row"><td>الإجمالي</td><td class="mono">${fmt(buckets.cur)}</td><td class="mono">${fmt(buckets.b30)}</td><td class="mono">${fmt(buckets.b60)}</td><td class="mono">${fmt(buckets.b90)}</td><td class="mono">${fmt(buckets.b90p)}</td><td class="mono">${fmt(Object.values(buckets).reduce((a,b)=>a+b,0))}</td></tr>
+    </table></div>` : '<div style="font-size:12.5px;color:var(--muted);font-weight:700">لا توجد ذمم غير محصّلة</div>'}
+  </div>
+
+  <div class="card"><div class="section-title">تفاصيل الرحلات (${trips.length})</div>
+    ${trips.length? `<div class="list">${[...trips].sort((a,b)=>b.date<a.date?1:-1).map(tripListItemHTML).join('')}</div>` : '<div style="font-size:12.5px;color:var(--muted);font-weight:700">لا توجد نتائج</div>'}
+  </div>
+  `;
+}
+
+/* ===================== Users & permissions (admin only) ===================== */
+function renderUsers(){
+  if(state.role!=='admin'){ document.getElementById('mainContent').innerHTML='<div class="card">هذا القسم متاح للمسؤول فقط.</div>'; return; }
+  const isOwner = state.account.ownerPhone===state.phone;
+  const admins = state.users.filter(u=>u.role==='admin');
+  const driverUsers = state.users.filter(u=>u.role==='driver');
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head"><div><div class="page-title disp">المستخدمون والصلاحيات</div><div class="page-sub">حساب المسؤول يملك كل الصلاحيات، وحسابات السائقين مقيّدة بتطبيق السائق فقط</div></div></div>
+
+  <div class="card">
+    <div class="section-title">مستخدمو الإدارة (صلاحيات كاملة)</div>
+    ${admins.map(u=>`<div class="list-item"><div class="li-top"><div><div class="li-title mono">${u.phone}</div><div class="li-meta">${u.name}${u.phone===state.account.ownerPhone?' · صاحب الحساب الأساسي':' · مشارك'}</div></div>
+      <div class="li-actions">${isOwner && u.phone!==state.account.ownerPhone?`<button class="btn btn-icon" onclick="removeUser('${u.id}')">✕</button>`:''}</div></div></div>`).join('')}
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <input type="tel" id="au_phone" placeholder="رقم هاتف مسؤول جديد" style="flex:1">
+      <input type="text" id="au_name" placeholder="الاسم" style="flex:1">
+      <button class="btn btn-y btn-sm" onclick="addAdminUser()">إضافة</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">حسابات السائقين (تفتح تطبيق السائق تلقائياً)</div>
+    ${driverUsers.length? driverUsers.map(u=>`<div class="list-item"><div class="li-top"><div><div class="li-title mono">${u.phone}</div><div class="li-meta">${u.name} — مرتبط بسجل السائق: ${driverName(u.driverId)}</div></div>
+      <div class="li-actions"><button class="btn btn-icon" onclick="removeUser('${u.id}')">✕</button></div></div></div>`).join('') : '<div style="font-size:12.5px;color:var(--muted);font-weight:700;margin-bottom:10px">لا يوجد حسابات سائقين مفعّلة بعد.</div>'}
+    <div class="form-grid" style="margin-top:10px">
+      <div class="field"><label>السائق</label><select id="du_driver">${state.drivers.map(d=>`<option value="${d.id}">${d.name}</option>`).join('')}</select></div>
+      <div class="field"><label>رقم هاتف الدخول</label><input type="tel" id="du_phone"></div>
+    </div>
+    <button class="btn btn-y btn-sm" onclick="addDriverUser()">إنشاء حساب دخول للسائق</button>
+  </div>
+  `;
+}
+async function addAdminUser(){
+  const phone = normalizePhone(document.getElementById('au_phone').value);
+  const name = document.getElementById('au_name').value.trim();
+  if(phone.length<7 || !name){ showToast('أدخل رقماً واسماً صحيحين', true); return; }
+  const existing = await sGet('account_by_phone:'+phone);
+  if(existing){ showToast('هذا الرقم مرتبط بحساب آخر بالفعل', true); return; }
+  state.users.push({id:uid(), phone, name, role:'admin', driverId:null, active:true});
+  await persist.users(); await sSet('account_by_phone:'+phone, {accountId:state.accountId});
+  showToast('تمت الإضافة'); renderUsers();
+}
+async function addDriverUser(){
+  const driverId = document.getElementById('du_driver').value;
+  const phone = normalizePhone(document.getElementById('du_phone').value);
+  if(!driverId || phone.length<7){ showToast('اختر سائقاً وأدخل رقم هاتف صحيح', true); return; }
+  const existing = await sGet('account_by_phone:'+phone);
+  if(existing){ showToast('هذا الرقم مرتبط بحساب آخر بالفعل', true); return; }
+  const d = state.drivers.find(x=>x.id===driverId);
+  state.users.push({id:uid(), phone, name:d.name, role:'driver', driverId, active:true});
+  await persist.users(); await sSet('account_by_phone:'+phone, {accountId:state.accountId});
+  showToast('تم إنشاء حساب السائق'); renderUsers();
+}
+async function removeUser(id){
+  if(!confirm('إلغاء وصول هذا المستخدم؟')) return;
+  const u = state.users.find(x=>x.id===id);
+  state.users = state.users.filter(x=>x.id!==id);
+  await persist.users();
+  showToast('تم إلغاء الوصول'); renderUsers();
+}
+
+/* ===================== الفريق ودعوات العمل ===================== */
+/* الأقسام القابلة لمنحها للأعضاء فقط. المستخدمون/الفريق/التتبع مقفلة دوماً على المسؤول
+   بغض النظر عن أي صلاحية (حماية من تصعيد الصلاحيات)، فلا تُعرض كخيار قابل للمنح. */
+const PERMISSION_LABELS = {
+  dashboard:'لوحة التحكم', trips:'الرحلات', customers:'العملاء', drivers:'السائقون والعهد',
+  vehicles:'الآليات', fleetops:'الصيانة والوقود', invoices:'الفواتير والتحصيل', cash:'الحركة المالية',
+  payroll:'الرواتب', reports:'التقارير', settings:'الإعدادات'
+};
+function inviteLinkUrl(){
+  const base = window.location.origin + window.location.pathname;
+  return base + '?invite_a=' + encodeURIComponent(state.accountId) + '&invite_t=' + encodeURIComponent(state.account.inviteToken);
+}
+function renderTeam(){
+  if(state.role!=='admin'){ document.getElementById('mainContent').innerHTML='<div class="card">هذا القسم متاح للمسؤول فقط.</div>'; return; }
+  const members = state.users.filter(u=>u.role==='member');
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head"><div><div class="page-title disp">الفريق ودعوات العمل</div><div class="page-sub">شارك رابط الدعوة مع عمالك أو سائقيك ليسجّلوا الدخول بأنفسهم بصلاحيات محدودة تحدّدها أنت</div></div></div>
+
+  <div class="card">
+    <div class="section-title">رابط الدعوة</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input readonly id="inviteLinkBox" value="${inviteLinkUrl()}" style="flex:1;min-width:240px" onclick="this.select()">
+      <button class="btn btn-y btn-sm" onclick="copyInviteLink()">نسخ الرابط</button>
+      <button class="btn btn-ghost btn-sm" onclick="regenerateInviteToken()">تجديد الرابط (يلغي القديم)</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);font-weight:700;margin-top:10px">كل من يفتح هذا الرابط ويدخل رقم هاتفه يُضاف تلقائياً لفريقك بصلاحيات محدودة (يمكنك تعديلها لاحقاً من هنا).</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">أعضاء الفريق (${members.length})</div>
+    ${members.length? members.map(u=>`
+      <div class="list-item">
+        <div class="li-top"><div><div class="li-title">${esc(u.name)}</div><div class="li-meta mono">${u.phone}</div></div>
+          <div class="li-actions"><button class="btn btn-icon" onclick="removeUser('${u.id}')">✕</button></div></div>
+        <div class="perm-grid">
+          ${Object.keys(PERMISSION_LABELS).map(k=>`
+            <label class="perm-chip"><input type="checkbox" ${u.permissions&&u.permissions[k]?'checked':''} onchange="toggleMemberPermission('${u.id}','${k}',this.checked)"> ${PERMISSION_LABELS[k]}</label>
+          `).join('')}
+        </div>
+      </div>`).join('') : '<div style="font-size:12.5px;color:var(--muted);font-weight:700">لا يوجد أعضاء فريق بعد. شارك رابط الدعوة أعلاه.</div>'}
+  </div>
+  `;
+}
+function copyInviteLink(){
+  const box = document.getElementById('inviteLinkBox');
+  box.select();
+  try{ document.execCommand('copy'); showToast('تم نسخ رابط الدعوة'); }
+  catch(e){ showToast('انسخ الرابط يدوياً من المربع'); }
+}
+async function regenerateInviteToken(){
+  if(!confirm('سيتوقف الرابط القديم عن العمل فوراً. متابعة؟')) return;
+  state.account.inviteToken = uid();
+  await sSet('account:'+state.accountId, state.account);
+  showToast('تم تجديد رابط الدعوة'); renderTeam();
+}
+async function toggleMemberPermission(userId, key, value){
+  const u = state.users.find(x=>x.id===userId);
+  if(!u) return;
+  u.permissions = u.permissions || {...DEFAULT_MEMBER_PERMISSIONS};
+  u.permissions[key] = value;
+  await persist.users();
+  showToast('تم تحديث الصلاحية');
+}
+
+/* ===================== التتبع المباشر GPS ===================== */
+let _trackingListeners=[];
+let _trackingMap=null;
+let _trackingMarkers={};
+function stopTrackingListeners(){
+  _trackingListeners.forEach(l=>l.stop());
+  _trackingListeners=[]; _trackingMarkers={}; _trackingMap=null;
+}
+function renderTracking(){
+  if(state.role!=='admin'){ document.getElementById('mainContent').innerHTML='<div class="card">هذا القسم متاح للمسؤول فقط.</div>'; return; }
+  const trackable = state.users.filter(u=>u.isFieldWorker || u.role==='driver');
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head"><div><div class="page-title disp">التتبع المباشر GPS</div><div class="page-sub">يظهر آخر موقع معروف لكل عامل ميداني أو سائق أثناء فتحه للتطبيق على جهازه</div></div></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div class="section-title" style="margin:0">حالة التتبع</div>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="gpsToggle" ${state.account.gpsTrackingEnabled?'checked':''} onchange="toggleGpsTracking(this.checked)">
+        ${state.account.gpsTrackingEnabled?'مُفعّل — التتبع يعمل الآن':'مُوقف'}
+      </label>
+    </div>
+    <div style="font-size:12px;color:var(--muted);font-weight:700;margin-top:6px">هذا الزر خاص بجهازك أنت كمسؤول فقط. الأعضاء المدعوّون عبر رابط الفريق لا يملكون خيار إيقافه من جهازهم.</div>
+  </div>
+  <div class="card">
+    <div id="trackingMap" style="width:100%;height:420px;border-radius:14px;overflow:hidden"></div>
+    ${trackable.length?'':'<div style="font-size:12.5px;color:var(--muted);font-weight:700;margin-top:10px">لا يوجد أعضاء ميدانيون أو سائقون بعد لعرض مواقعهم.</div>'}
+  </div>
+  `;
+  initTrackingMap(trackable);
+}
+function initTrackingMap(trackable){
+  stopTrackingListeners();
+  if(typeof L==='undefined'){ showToast('تعذّر تحميل مكتبة الخرائط — تحقق من الاتصال بالإنترنت', true); return; }
+  const mapEl = document.getElementById('trackingMap');
+  if(!mapEl) return;
+  _trackingMap = L.map('trackingMap').setView([33.3152,44.3661], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap'}).addTo(_trackingMap);
+  trackable.forEach(u=>{
+    const listener = sListen('driver_location:'+state.accountId+':'+u.phone, (loc)=>{
+      if(!loc || !_trackingMap) return;
+      if(_trackingMarkers[u.phone]){
+        _trackingMarkers[u.phone].setLatLng([loc.lat, loc.lng]);
+      }else{
+        _trackingMarkers[u.phone] = L.marker([loc.lat, loc.lng]).addTo(_trackingMap).bindPopup(u.name+(loc.updatedAt?'<br><small>'+new Date(loc.updatedAt).toLocaleTimeString('ar')+'</small>':''));
+      }
+    });
+    _trackingListeners.push(listener);
+  });
+}
+async function toggleGpsTracking(enabled){
+  state.account.gpsTrackingEnabled = enabled;
+  await sSet('account:'+state.accountId, state.account);
+  await sSet('gps_enabled:'+state.accountId, enabled);
+  showToast(enabled?'تم تفعيل التتبع':'تم إيقاف التتبع');
+  renderTracking();
+}
+
+/* تتبع تلقائي على جهاز العامل الميداني/السائق المدعو — بدون زر إيقاف عندهم */
+let _gpsWatchId=null;
+let _gpsEnabledListener=null;
+function startGpsAutoTracking(){
+  if(_gpsEnabledListener) return;
+  _gpsEnabledListener = sListen('gps_enabled:'+state.accountId, (enabled)=>{
+    if(enabled) beginWatchingPosition(); else stopWatchingPositionOnly();
+  });
+}
+function stopGpsAutoTracking(){
+  if(_gpsEnabledListener){ _gpsEnabledListener.stop(); _gpsEnabledListener=null; }
+  stopWatchingPositionOnly();
+}
+function beginWatchingPosition(){
+  if(_gpsWatchId!==null || !navigator.geolocation) return;
+  _gpsWatchId = navigator.geolocation.watchPosition(pos=>{
+    const {latitude, longitude} = pos.coords;
+    const me = state.users.find(u=>u.phone===state.phone);
+    sSet('driver_location:'+state.accountId+':'+state.phone, {lat:latitude, lng:longitude, updatedAt:Date.now(), name:(me&&me.name)||''});
+  }, err=>console.error('GPS error', err), {enableHighAccuracy:true, maximumAge:15000, timeout:20000});
+}
+function stopWatchingPositionOnly(){
+  if(_gpsWatchId!==null && navigator.geolocation){ navigator.geolocation.clearWatch(_gpsWatchId); _gpsWatchId=null; }
+}
+
+/* ===================== Settings ===================== */
+function renderSettings(){
+  document.getElementById('mainContent').innerHTML = `
+  <div class="page-head"><div><div class="page-title disp">الإعدادات</div><div class="page-sub">بيانات الشركة والرصيد الافتتاحي للصندوق</div></div></div>
+  <div class="card">
+    <div class="field"><label>اسم الشركة</label><input type="text" id="sf_name" value="${esc(state.account.companyName)}"></div>
+    <div class="field"><label>الرصيد الافتتاحي للصندوق</label><input type="number" id="sf_opening" value="${state.account.openingCashBalance||0}"></div>
+    <button class="btn btn-y btn-sm" onclick="saveAccountSettings()">حفظ</button>
+  </div>
+  <div class="card">
+    <div class="section-title">حالة التخزين</div>
+    <p style="font-size:12.5px;color:var(--muted);font-weight:600;line-height:1.9">
+      ${firebaseReady()
+        ? '🟢 مرتبط بـ Firebase — تزامن سحابي حقيقي بين كل الأجهزة والمتصفحات تلقائياً.'
+        : CLOUD_AVAILABLE
+          ? 'التخزين السحابي (معاينة Claude) مفعّل حالياً — بياناتك تتزامن بين الأجهزة التي تسجّل بها الدخول بنفس رقم الهاتف داخل هذه المعاينة فقط.'
+          : '⚠️ أنت تفتح هذا الملف كموقع مستقل (مثل GitHub Pages) بدون ربط Firebase. البيانات تُحفظ محلياً داخل هذا المتصفح على هذا الجهاز فقط، ولن تظهر تلقائياً عند فتح نفس الرابط من جهاز أو متصفح آخر. لتفعيل تزامن حقيقي بين كل الأجهزة، اربط المشروع بـ Firebase.'}
+    </p>
+  </div>
+  <div class="card">
+    <div class="section-title">ملاحظة أمانة</div>
+    <p style="font-size:12.5px;color:var(--muted);font-weight:600;line-height:1.9">
+      هذا النظام إصدار MVP يغطي: الرحلات وربحيتها، الآليات، الصيانة، الوقود، السائقين والعهد، الفواتير والتحصيل، حركة صندوق مبسّطة، والتقارير التنفيذية.
+      مراحل لاحقة مقترحة حسب خطة العمل: محاسبة القيد المزدوج الكاملة مع شجرة حسابات واعتماد قيود، تعدد العملات والضرائب، مسير رواتب متكامل، صلاحيات دقيقة لكل دور، سجل تدقيق كامل، ومرفقات/مستندات لكل عملية.
+      البيانات معزولة برقم الحساب، دون تشفير بمستوى بنكي — مناسبة للاستخدام الداخلي بين الإدارة والسائقين.
+    </p>
+  </div>
+  `;
+}
+async function saveAccountSettings(){
+  state.account.companyName = document.getElementById('sf_name').value.trim() || state.account.companyName;
+  state.account.openingCashBalance = Number(document.getElementById('sf_opening').value)||0;
+  await persist.account();
+  document.getElementById('topbarCompanyName').textContent = state.account.companyName;
+  showToast('تم الحفظ');
+}
+
+/* ===================== Driver App ===================== */
+function myDriverRecord(){ return state.drivers.find(d=>d.id===state.myDriverId); }
+function myTrips(){ return state.trips.filter(t=>t.driverId===state.myDriverId); }
+
+function showDriverView(view){
+  state.currentDriverView=view;
+  document.querySelectorAll('.dnav button').forEach(b=>b.classList.toggle('active', b.dataset.dview===view));
+  const R={home:renderDriverHome, expense:renderDriverExpense, fuel:renderDriverFuel, advances:renderDriverAdvances};
+  (R[view]||renderDriverHome)();
+}
+function renderDriverHome(){
+  const d = myDriverRecord();
+  const trips = [...myTrips()].sort((a,b)=>b.createdAt-a.createdAt);
+  const active = trips.filter(t=>['scheduled','inprogress'].includes(t.status));
+  document.getElementById('driverContent').innerHTML = `
+  <div class="dtile"><div style="font-weight:800;font-size:15px;margin-bottom:4px">أهلاً ${d?d.name:''}</div><div style="font-size:12px;color:var(--muted);font-weight:700">هذه رحلاتك ومهامك اليومية</div></div>
+  ${active.length? active.map(driverTripTile).join('') : '<div class="dtile"><div style="font-size:13px;font-weight:700;color:var(--muted);text-align:center">لا توجد رحلة نشطة حالياً</div></div>'}
+  <div class="section-title" style="margin:16px 0 10px">رحلات سابقة</div>
+  ${trips.filter(t=>!['scheduled','inprogress'].includes(t.status)).slice(0,10).map(driverTripTile).join('') || '<div style="font-size:12.5px;color:var(--muted);font-weight:700">لا يوجد سجل بعد.</div>'}
+  `;
+}
+function driverTripTile(t){
+  const st=TRIP_STATUS[t.status]||TRIP_STATUS.new;
+  return `<div class="dtile">
+    <div class="li-top"><div class="li-title mono">${t.tripNo}</div><span class="badge ${st.c}">${st.l}</span></div>
+    <div class="li-meta">${fmtDate(t.date)} · ${esc(t.origin||'—')} ← ${esc(t.destination||'—')}</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      ${t.status==='scheduled'?`<button class="btn btn-y btn-sm" onclick="driverSetTripStatus('${t.id}','inprogress')">بدء الرحلة</button>`:''}
+      ${t.status==='inprogress'?`<button class="btn btn-g btn-sm" onclick="driverSetTripStatus('${t.id}','completed')">تأكيد الوصول والتسليم</button>`:''}
+    </div>
+  </div>`;
+}
+async function driverSetTripStatus(id, status){
+  const t = state.trips.find(x=>x.id===id);
+  t.status = status;
+  await persist.trips();
+  showToast('تم تحديث حالة الرحلة');
+  renderDriverHome();
+}
+
+function renderDriverExpense(){
+  const trips = myTrips().filter(t=>['scheduled','inprogress','completed'].includes(t.status));
+  document.getElementById('driverContent').innerHTML = `
+  <div class="dtile"><div style="font-weight:800;font-size:14px;margin-bottom:10px">رفع مصروف على رحلة</div>
+    <div class="field"><label>الرحلة</label><select id="de_trip">${trips.map(t=>`<option value="${t.id}">${t.tripNo} — ${fmtDate(t.date)}</option>`).join('') || '<option value="">لا توجد رحلات</option>'}</select></div>
+    <div class="field"><label>نوع المصروف</label><select id="de_type">${Object.entries(EXP_TYPES).map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select></div>
+    <div class="field"><label>المبلغ</label><input type="number" id="de_amount"></div>
+    <div class="field"><label>ملاحظة</label><input type="text" id="de_note"></div>
+    <button class="btn btn-y btn-block" onclick="driverAddExpense()">إرسال المصروف</button>
+  </div>`;
+}
+async function driverAddExpense(){
+  const tripId = document.getElementById('de_trip').value;
+  const amount = Number(document.getElementById('de_amount').value)||0;
+  if(!tripId || amount<=0){ showToast('تحقق من البيانات', true); return; }
+  const t = state.trips.find(x=>x.id===tripId);
+  t.expenses = t.expenses||[];
+  t.expenses.push({id:uid(), type:document.getElementById('de_type').value, amount, note:document.getElementById('de_note').value.trim(), date:todayStr()});
+  await persist.trips(); showToast('تم إرسال المصروف'); renderDriverExpense();
+}
+
+function renderDriverFuel(){
+  const trips = myTrips();
+  document.getElementById('driverContent').innerHTML = `
+  <div class="dtile"><div style="font-weight:800;font-size:14px;margin-bottom:10px">تسجيل تعبئة وقود</div>
+    <div class="field"><label>الرحلة (اختياري)</label><select id="dfl_trip"><option value="">—</option>${trips.map(t=>`<option value="${t.id}">${t.tripNo}</option>`).join('')}</select></div>
+    <div class="field"><label>عدد اللترات</label><input type="number" id="dfl_liters"></div>
+    <div class="field"><label>سعر اللتر</label><input type="number" id="dfl_price"></div>
+    <div class="field"><label>قراءة العداد</label><input type="number" id="dfl_odo"></div>
+    <button class="btn btn-y btn-block" onclick="driverAddFuel()">إرسال</button>
+  </div>`;
+}
+async function driverAddFuel(){
+  const liters=Number(document.getElementById('dfl_liters').value)||0;
+  if(liters<=0){ showToast('أدخل عدد لترات صحيح', true); return; }
+  const vehicle = state.vehicles.find(v=>v.currentDriverId===state.myDriverId);
+  state.fuelEntries.push({id:uid(), vehicleId: vehicle?vehicle.id:'', driverId:state.myDriverId, date:todayStr(),
+    liters, pricePerLiter:Number(document.getElementById('dfl_price').value)||0, odometer:Number(document.getElementById('dfl_odo').value)||0,
+    tripId: document.getElementById('dfl_trip').value||null});
+  await persist.fuelEntries(); showToast('تم إرسال بيانات التعبئة'); renderDriverFuel();
+}
+
+function renderDriverAdvances(){
+  const advs = state.advances.filter(a=>a.driverId===state.myDriverId);
+  const openBal = advs.filter(a=>a.status==='open').reduce((s,a)=>s+(Number(a.amount)-Number(a.settledAmount||0)),0);
+  document.getElementById('driverContent').innerHTML = `
+  <div class="dtile dtile-big"><div style="font-size:12px;font-weight:800;color:var(--muted)">الرصيد المفتوح من العهدة</div><div class="mono" style="font-weight:800">${fmt(openBal)}</div></div>
+  ${advs.length? advs.map(a=>`<div class="dtile"><div class="li-top"><div class="li-title">${ADV_TYPES[a.type]}</div><span class="badge ${a.status==='open'?'badge-y':'badge-g'}">${a.status==='open'?'مفتوحة':'مسدّدة'}</span></div>
+    <div class="li-meta">${fmtDate(a.date)} · المبلغ: <b class="mono">${fmt(a.amount)}</b> · المسدد: <b class="mono">${fmt(a.settledAmount||0)}</b></div></div>`).join('') : '<div class="dtile" style="text-align:center;font-size:12.5px;color:var(--muted);font-weight:700">لا توجد سلف مسجّلة</div>'}
+  `;
+}
+
+/* ===================== Init ===================== */
+populateCountrySelect();
+document.getElementById('loginPhone').addEventListener('keydown', e=>{ if(e.key==='Enter') handlePhoneSubmit(); });
+(function initInviteNotice(){
+  const invite = getInviteFromUrl();
+  if(invite){
+    document.getElementById('loginIntroText').textContent = 'وصلتك دعوة للانضمام إلى فريق عمل. أدخل رقم هاتفك للمتابعة.';
+  }
+})();
+function refreshStorageNotice(){
+  const el = document.getElementById('storageModeNotice');
+  if(!el) return;
+  if(firebaseReady()){
+    el.textContent = '🟢 مرتبط بـ Firebase — تزامن سحابي حقيقي بين كل الأجهزة.';
+  }else if(CLOUD_AVAILABLE){
+    el.textContent = '⚡ التخزين السحابي (معاينة Claude) مفعّل — يتزامن داخل هذه المعاينة فقط.';
+  }else{
+    el.innerHTML = '⚠️ وضع محلي: البيانات تُحفظ في هذا المتصفح فقط ولا تتزامن مع أجهزة أخرى (اربط Firebase من الإعدادات لتفعيل التزامن الحقيقي).';
+  }
+}
+refreshStorageNotice();
+document.addEventListener('DOMContentLoaded', refreshStorageNotice);
+window.addEventListener('load', refreshStorageNotice);
+
+/* Global safety net: never let a raw error reach the user as an uncaught exception. */
+window.addEventListener('unhandledrejection', function(ev){
+  console.error('Unhandled rejection:', ev.reason);
+  try{ showToast('حدث خطأ غير متوقع، تمت معالجته تلقائياً. أعد المحاولة إذا لزم الأمر.', true); }catch(e){}
+  ev.preventDefault();
+});
+window.addEventListener('error', function(ev){
+  console.error('Uncaught error:', ev.error||ev.message);
+  try{ showToast('حدث خطأ غير متوقع، تمت معالجته تلقائياً. أعد المحاولة إذا لزم الأمر.', true); }catch(e){}
+});
+</script>
+</body>
+</html>
