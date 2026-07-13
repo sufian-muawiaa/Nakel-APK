@@ -295,11 +295,11 @@ tr.neg td{color:var(--red);}
      5) ارفع الملف مجدداً — سيتحول التطبيق تلقائياً لاستخدام Firebase
      بدون أي تعديل آخر. إن تُرك كما هو، يعمل التطبيق بالوضع المحلي كالمعتاد.
      ============================================================ -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, get, set, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+(function(){
   const firebaseConfig = {
     apiKey: "AIzaSyCK33msN9nt8iRntunkAdMtco8G1Z_Im8Q",
     authDomain: "nakel-3d246.firebaseapp.com",
@@ -315,38 +315,32 @@ tr.neg td{color:var(--red);}
 
   if(isConfigured){
     try{
-      const app = initializeApp(firebaseConfig);
-      const db = getDatabase(app);
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
 
       window.__firebaseGet = async function(key){
-        const r = ref(db, "nakl_kv/" + encodeURIComponent(key));
-        const snap = await get(r);
+        const snap = await db.ref("nakl_kv/" + encodeURIComponent(key)).once('value');
         if(!snap.exists()) return null;
         const data = snap.val();
         return (data && data.value !== undefined) ? JSON.parse(data.value) : null;
       };
       window.__firebaseSet = async function(key, value){
-        const r = ref(db, "nakl_kv/" + encodeURIComponent(key));
-        await set(r, { value: JSON.stringify(value), updatedAt: Date.now() });
+        await db.ref("nakl_kv/" + encodeURIComponent(key)).set({ value: JSON.stringify(value), updatedAt: Date.now() });
         return true;
       };
-
       window.__firebaseListen = function(key, cb){
-        const r = ref(db, "nakl_kv/" + encodeURIComponent(key));
-        onValue(r, (snap)=>{
+        const r = db.ref("nakl_kv/" + encodeURIComponent(key));
+        r.on('value', (snap)=>{
           const data = snap.exists() ? snap.val() : null;
           const value = (data && data.value !== undefined) ? JSON.parse(data.value) : null;
           cb(value);
         });
         return r;
       };
-      window.__firebaseUnlisten = function(refObj){ if(refObj) off(refObj); };
+      window.__firebaseUnlisten = function(refObj){ if(refObj) refObj.off(); };
 
-      /* تسجيل دخول مجهول مجاني (لا يحتاج بطاقة دفع ولا رقم هاتف) — يُستخدم فقط
-         لمنع الوصول العشوائي غير الموثّق لقاعدة البيانات عبر قواعد الأمان
-         auth != null، وهو أول خط حماية مجاني قبل تفعيل التحقق الحقيقي بالهاتف. */
-      const auth = getAuth(app);
-      signInAnonymously(auth).catch(e=>console.error('anonymous auth failed:', e));
+      /* تسجيل دخول مجهول مجاني — أول خط حماية قبل تفعيل التحقق الحقيقي بالهاتف */
+      firebase.auth().signInAnonymously().catch(e=>console.error('anonymous auth failed:', e));
 
       window.__firebaseReadyFlag = true;
       console.log("✅ Firebase Realtime Database متصل — التزامن السحابي الحقيقي بين الأجهزة مُفعّل.");
@@ -355,6 +349,7 @@ tr.neg td{color:var(--red);}
       window.__firebaseReadyFlag = false;
     }
   }
+})();
 </script>
 
 <!-- ================= LOGIN ================= -->
@@ -870,6 +865,8 @@ async function enterAccount(phone, accountId){
   state.advances=(await sGet('advances:'+accountId))||[];
   state.cashEntries=(await sGet('cashEntries:'+accountId))||[];
   state.payrollRuns=(await sGet('payrollRuns:'+accountId))||[];
+  localSet('last_phone', phone); // لتسجيل الدخول التلقائي بعد أي تحديث للصفحة
+  startLiveDataSync();
 
   const themePref = await sGet('theme_pref:'+phone);
   if(themePref==='dark'){ document.documentElement.setAttribute('data-theme','dark'); document.querySelectorAll('.theme-toggle').forEach(b=>b.textContent='☀'); }
@@ -891,9 +888,51 @@ async function enterAccount(phone, accountId){
   }
 }
 
+/* ===================== تزامن لحظي حقيقي لجداول العمل ===================== */
+const LIVE_DATA_KEYS = ['customers','drivers','vehicles','trips','fuelEntries','maintenanceEntries','invoices','advances','cashEntries','payrollRuns'];
+let _dataListeners=[];
+function startLiveDataSync(){
+  stopLiveDataSync();
+  LIVE_DATA_KEYS.forEach(k=>{
+    const listener = sListen(k+':'+state.accountId, (val)=>{
+      state[k] = val || [];
+      refreshCurrentViewIfSafe();
+    });
+    _dataListeners.push(listener);
+  });
+}
+function stopLiveDataSync(){
+  _dataListeners.forEach(l=>l.stop());
+  _dataListeners=[];
+}
+/* لا نعيد رسم الشاشة إذا كان المستخدم يملأ نموذجاً بنافذة منبثقة حالياً، حتى لا نمسح ما يكتبه */
+function refreshCurrentViewIfSafe(){
+  const modalRoot = document.getElementById('modalRoot');
+  if(modalRoot && modalRoot.innerHTML.trim()!=='') return;
+  if(!state.accountId) return;
+  if(document.getElementById('appScreen') && !document.getElementById('appScreen').classList.contains('hidden')){
+    showView(state.currentView);
+  }else if(document.getElementById('driverScreen') && !document.getElementById('driverScreen').classList.contains('hidden')){
+    showDriverView(state.currentDriverView);
+  }
+}
+
+/* محاولة دخول تلقائي إذا كان هذا الجهاز قد سجّل دخول من قبل بنفس المتصفح */
+async function tryAutoLogin(){
+  const phone = localGet('last_phone');
+  if(!phone) return;
+  const mapping = await sGet('account_by_phone:'+phone);
+  if(mapping && mapping.accountId){
+    pendingPhone = phone;
+    await tryEnterExistingAccount(phone, mapping.accountId);
+  }
+}
+
 function logout(){
   if(_incomingListener){ _incomingListener.stop(); _incomingListener=null; }
   stopGpsAutoTracking();
+  stopLiveDataSync();
+  localSet('last_phone', null);
   Object.assign(state, {phone:null, accountId:null, account:null, role:null, myDriverId:null, permissions:null, isFieldWorker:false, users:[], customers:[], drivers:[], vehicles:[], trips:[], fuelEntries:[], maintenanceEntries:[], invoices:[], advances:[], cashEntries:[], payrollRuns:[]});
   document.getElementById('appScreen').classList.add('hidden');
   document.getElementById('driverScreen').classList.add('hidden');
@@ -2192,6 +2231,7 @@ function renderDriverAdvances(){
 
 /* ===================== Init ===================== */
 populateCountrySelect();
+tryAutoLogin();
 document.getElementById('loginPhone').addEventListener('keydown', e=>{ if(e.key==='Enter') handlePhoneSubmit(); });
 (function initInviteNotice(){
   const invite = getInviteFromUrl();
